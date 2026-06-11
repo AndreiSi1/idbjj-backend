@@ -10,6 +10,7 @@ from app.db.models import DialogState, JournalEntry, Message, Profile, User
 async def upsert_user(
     session: AsyncSession, channel: str, ext_id: str, *,
     full_name: str | None = None, source: str | None = None,
+    referred_by: int | None = None,
 ) -> User:
     user = (
         await session.execute(
@@ -17,9 +18,15 @@ async def upsert_user(
         )
     ).scalar_one_or_none()
     if user is None:
-        user = User(channel=channel, ext_id=ext_id, full_name=full_name, source=source)
+        user = User(
+            channel=channel, ext_id=ext_id, full_name=full_name,
+            source=source, referred_by=referred_by,
+        )
         session.add(user)
         await session.flush()
+        if user.referred_by == user.id:  # защита от самореферала
+            user.referred_by = None
+            await session.flush()
         return user
     # Существующий: дозаполняем имя и источник, но НЕ перезаписываем (first-touch).
     changed = False
@@ -87,6 +94,19 @@ async def count_journal_entries(session: AsyncSession, user_id: int) -> int:
         (
             await session.execute(
                 select(_func.count(JournalEntry.id)).where(JournalEntry.user_id == user_id)
+            )
+        ).scalar_one()
+        or 0
+    )
+
+
+async def count_referrals(session: AsyncSession, user_id: int) -> int:
+    """Сколько друзей пришло по ссылке этого юзера."""
+    from sqlalchemy import func as _func
+    return int(
+        (
+            await session.execute(
+                select(_func.count(User.id)).where(User.referred_by == user_id)
             )
         ).scalar_one()
         or 0

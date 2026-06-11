@@ -37,6 +37,8 @@ class User(Base):
     lang: Mapped[str | None] = mapped_column(String(8), nullable=True)  # ru|en|es|pt; NULL = ещё не выбран
     # Источник привлечения из deep-link (?start=yt|vk|reels…). NULL = прямой/неизвестно. First-touch.
     source: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    # Кто пригласил (реферал): id пригласившего юзера. First-touch, ставится при создании.
+    referred_by: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     # Когда пользователь принял оферту и согласие на обработку ПДн (152-ФЗ). NULL = ещё не принял.
     consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

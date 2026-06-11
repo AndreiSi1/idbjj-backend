@@ -132,6 +132,9 @@ T: dict[str, dict[str, str]] = {
         "btn_share_progress": "📤 Поделиться карточкой",
         "card_level": "Уровень",
         "share_caption": "🥋 Мой прогресс в BJJ: {belt}, {title} (уровень {level}). Качаю джиу-джитсу с ID BJJ 👉 {url}",
+        "btn_invite": "🤝 Пригласить друга",
+        "invite_text": "🤝 Приглашай друзей в ID BJJ!\n\nКинь другу свою ссылку — когда он зайдёт, вы ОБА получите бонус XP к уровню.\n\nТвоя ссылка:\n{link}\n\nПриглашено друзей: {count}",
+        "ref_reward": "🎉 По твоей ссылке в ID BJJ пришёл друг! +{xp} XP. Спасибо, что растишь сообщество 🤝",
     },
     "en": {
         "consent": (
@@ -216,6 +219,9 @@ T: dict[str, dict[str, str]] = {
         "btn_share_progress": "📤 Share my card",
         "card_level": "Level",
         "share_caption": "🥋 My BJJ progress: {belt}, {title} (level {level}). Leveling up my jiu-jitsu with ID BJJ 👉 {url}",
+        "btn_invite": "🤝 Invite a friend",
+        "invite_text": "🤝 Invite friends to ID BJJ!\n\nSend a friend your link — when they join, you BOTH get bonus XP.\n\nYour link:\n{link}\n\nFriends invited: {count}",
+        "ref_reward": "🎉 A friend joined ID BJJ via your link! +{xp} XP. Thanks for growing the community 🤝",
     },
     "es": {
         "consent": (
@@ -300,6 +306,9 @@ T: dict[str, dict[str, str]] = {
         "btn_share_progress": "📤 Compartir tarjeta",
         "card_level": "Nivel",
         "share_caption": "🥋 Mi progreso en BJJ: {belt}, {title} (nivel {level}). Mejorando mi jiu-jitsu con ID BJJ 👉 {url}",
+        "btn_invite": "🤝 Invitar a un amigo",
+        "invite_text": "🤝 ¡Invita a tus amigos a ID BJJ!\n\nEnvía tu enlace a un amigo — cuando entre, AMBOS reciben XP de bonus.\n\nTu enlace:\n{link}\n\nAmigos invitados: {count}",
+        "ref_reward": "🎉 ¡Un amigo entró a ID BJJ con tu enlace! +{xp} XP. Gracias por hacer crecer la comunidad 🤝",
     },
     "pt": {
         "consent": (
@@ -384,6 +393,9 @@ T: dict[str, dict[str, str]] = {
         "btn_share_progress": "📤 Compartilhar card",
         "card_level": "Nível",
         "share_caption": "🥋 Meu progresso no BJJ: {belt}, {title} (nível {level}). Evoluindo meu jiu-jitsu com ID BJJ 👉 {url}",
+        "btn_invite": "🤝 Convidar um amigo",
+        "invite_text": "🤝 Convide amigos para o ID BJJ!\n\nMande seu link para um amigo — quando ele entrar, VOCÊS DOIS ganham XP de bônus.\n\nSeu link:\n{link}\n\nAmigos convidados: {count}",
+        "ref_reward": "🎉 Um amigo entrou no ID BJJ pelo seu link! +{xp} XP. Obrigado por crescer a comunidade 🤝",
     },
 }
 

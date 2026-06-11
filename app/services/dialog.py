@@ -21,6 +21,7 @@ from app.services.i18n import t
 from app.services.repo import (
     add_journal_entry,
     count_journal_entries,
+    count_referrals,
     get_journal_entries,
     get_profile,
     get_state,
@@ -56,6 +57,7 @@ def _menu_buttons(lang: str | None):
         [(t(lang, "btn_diet"), "m:diet")],
         [(t(lang, "btn_progress"), "progress")],
         [(t(lang, "btn_journal"), "journal")],
+        [(t(lang, "btn_invite"), "invite")],
         [(t(lang, "btn_oss"), "oss")],
         [(t(lang, "btn_contact"), "m:contact")],
         [(t(lang, "btn_lang"), "lang_menu")],
@@ -122,7 +124,16 @@ async def handle_update(
     callback_id: str | None = None,
     source: str | None = None,
 ) -> None:
-    user = await upsert_user(session, channel, ext_id, full_name=full_name, source=source)
+    # Реферальный deep-link ?start=ref_<id> → кто пригласил + единый бакет источника.
+    referred_by: int | None = None
+    if source and source.startswith("ref_"):
+        tail = source[4:]
+        if tail.isdigit():
+            referred_by = int(tail)
+        source = "referral"
+    user = await upsert_user(
+        session, channel, ext_id, full_name=full_name, source=source, referred_by=referred_by
+    )
     if text:
         await log_message(session, user.id, "in", text)
     state = await get_state(session, user.id)
@@ -152,6 +163,7 @@ async def handle_update(
             user.consent_at = datetime.now(timezone.utc)
             await session.flush()
             await progress.award(session, user.id, "register")
+            await _reward_referrer(session, user)
             await _show_menu(session, user, state)
         else:
             await _send_consent(session, user)
@@ -184,6 +196,8 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
         await _show_journal(session, user, state)
     elif payload == "share:progress":
         await _share_progress(session, user, state)
+    elif payload == "invite":
+        await _show_invite(session, user, state)
     elif payload == "jr:add":
         await _journal_add(session, user, state)
     elif payload == "jr:review":
@@ -257,6 +271,40 @@ async def _change_lang(session: AsyncSession, user: User, state: DialogState, ch
     await session.flush()
     await _send(session, user, t(user.lang, "lang_changed"))
     await _show_menu(session, user, state)
+
+
+async def _reward_referrer(session: AsyncSession, user: User) -> None:
+    """Награда пригласившему — один раз, в момент согласия нового юзера.
+    Новичку — бонус, рефереру — XP + уведомление в его канал."""
+    ref_id = user.referred_by
+    if not ref_id or ref_id == user.id:
+        return
+    referrer = await session.get(User, ref_id)
+    if referrer is None:
+        return
+    await progress.award(session, user.id, "referred_bonus")
+    await progress.award(session, referrer.id, "referral")
+    xp = progress.XP_EVENTS.get("referral", 0)
+    try:
+        await messenger.send_message(
+            referrer.channel, referrer.ext_id, t(referrer.lang, "ref_reward", xp=xp)
+        )
+    except Exception as e:  # noqa: BLE001 — уведомление не должно ронять онбординг
+        log.warning("referrer notify failed: %s", e)
+
+
+async def _show_invite(session: AsyncSession, user: User, state: DialogState) -> None:
+    _set(state, step="menu", mode=None, data={})
+    await session.flush()
+    bot_url = settings.telegram_bot_url or "https://t.me/ID_BJJ_onlinebot"
+    sep = "&" if "?" in bot_url else "?"
+    link = f"{bot_url}{sep}start=ref_{user.id}"
+    count = await count_referrals(session, user.id)
+    await _send(
+        session, user,
+        t(user.lang, "invite_text", link=link, count=count),
+        buttons=_hint_buttons(user.lang),
+    )
 
 
 def _progress_buttons(lang: str | None):
