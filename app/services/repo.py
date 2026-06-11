@@ -4,7 +4,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import DialogState, Message, Profile, User
+from app.db.models import DialogState, JournalEntry, Message, Profile, User
 
 
 async def upsert_user(
@@ -55,3 +55,39 @@ async def get_profile(session: AsyncSession, user_id: int) -> Profile:
 async def log_message(session: AsyncSession, user_id: int, direction: str, text: str) -> None:
     session.add(Message(user_id=user_id, direction=direction, text=text))
     await session.flush()
+
+
+# ── дневник тренировок ──────────────────────────────────────────────────────────
+
+async def add_journal_entry(session: AsyncSession, user_id: int, text: str) -> JournalEntry:
+    entry = JournalEntry(user_id=user_id, text=text)
+    session.add(entry)
+    await session.flush()
+    return entry
+
+
+async def get_journal_entries(
+    session: AsyncSession, user_id: int, limit: int = 15
+) -> list[JournalEntry]:
+    """Последние записи дневника (новые первыми)."""
+    rows = (
+        await session.execute(
+            select(JournalEntry)
+            .where(JournalEntry.user_id == user_id)
+            .order_by(JournalEntry.id.desc())
+            .limit(limit)
+        )
+    ).scalars().all()
+    return list(rows)
+
+
+async def count_journal_entries(session: AsyncSession, user_id: int) -> int:
+    from sqlalchemy import func as _func
+    return int(
+        (
+            await session.execute(
+                select(_func.count(JournalEntry.id)).where(JournalEntry.user_id == user_id)
+            )
+        ).scalar_one()
+        or 0
+    )

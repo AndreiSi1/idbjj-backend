@@ -122,6 +122,21 @@ class Lead(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class JournalEntry(Base):
+    """Запись дневника тренировок: что отрабатывал ученик. Закрывает боль «забыл,
+    что проходили», даёт повод возвращаться после каждой тренировки (ретеншн) и
+    кормит AI-тренера историей для разбора и построения игры."""
+
+    __tablename__ = "journal_entries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+
 class Message(Base):
     """Лог переписки: каждое входящее и исходящее сообщение (для истории и админки)."""
 

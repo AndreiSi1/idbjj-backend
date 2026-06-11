@@ -18,7 +18,15 @@ from app.config import settings
 from app.db.models import DialogState, Lead, User
 from app.services import ai, i18n, messenger, progress
 from app.services.i18n import t
-from app.services.repo import get_profile, get_state, log_message, upsert_user
+from app.services.repo import (
+    add_journal_entry,
+    count_journal_entries,
+    get_journal_entries,
+    get_profile,
+    get_state,
+    log_message,
+    upsert_user,
+)
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +55,7 @@ def _menu_buttons(lang: str | None):
         [(t(lang, "btn_enc"), "m:enc")],
         [(t(lang, "btn_diet"), "m:diet")],
         [(t(lang, "btn_progress"), "progress")],
+        [(t(lang, "btn_journal"), "journal")],
         [(t(lang, "btn_oss"), "oss")],
         [(t(lang, "btn_contact"), "m:contact")],
         [(t(lang, "btn_lang"), "lang_menu")],
@@ -171,6 +180,12 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
         await _start_diet(session, user, state)
     elif payload == "progress":
         await _show_progress(session, user, state)
+    elif payload == "journal":
+        await _show_journal(session, user, state)
+    elif payload == "jr:add":
+        await _journal_add(session, user, state)
+    elif payload == "jr:review":
+        await _journal_review(session, user, state)
     elif payload == "oss":
         await _show_oss(session, user, state)
     elif payload == "m:contact":
@@ -212,6 +227,9 @@ async def _handle_text(session: AsyncSession, user: User, state: DialogState, te
         return
     if state.step == "comp_goal":
         await _collect_comp_goal(session, user, state, text)
+        return
+    if state.step == "journal_write":
+        await _collect_journal(session, user, state, text)
         return
 
     if state.mode in ai.MODES:
@@ -372,6 +390,69 @@ async def _collect_comp_goal(session: AsyncSession, user: User, state: DialogSta
     _set(state, step="ai", mode="trainer", data={})
     await session.flush()
     await _send(session, user, answer, buttons=_trainer_buttons(user.lang))
+
+
+# ── Дневник тренировок ─────────────────────────────────────────────────────────────
+
+def _journal_buttons(lang: str | None, *, has_entries: bool):
+    rows = [[(t(lang, "btn_jr_add"), "jr:add")]]
+    if has_entries:
+        rows.append([(t(lang, "btn_jr_review"), "jr:review")])
+    rows.append([(t(lang, "btn_menu"), "menu")])
+    return rows
+
+
+async def _show_journal(session: AsyncSession, user: User, state: DialogState) -> None:
+    _set(state, step="menu", mode=None, data={})
+    entries = await get_journal_entries(session, user.id, limit=5)
+    await session.flush()
+    if not entries:
+        text = f"{t(user.lang, 'jr_title')}\n\n{t(user.lang, 'jr_empty')}"
+    else:
+        total = await count_journal_entries(session, user.id)
+        lines = "\n".join(f"• {e.created_at:%d.%m} — {e.text[:80]}" for e in entries)
+        text = (
+            f"{t(user.lang, 'jr_title')}\n\n{t(user.lang, 'jr_count', n=total)}\n\n"
+            f"{t(user.lang, 'jr_recent')}\n{lines}"
+        )
+    await _send(session, user, text, buttons=_journal_buttons(user.lang, has_entries=bool(entries)))
+
+
+async def _journal_add(session: AsyncSession, user: User, state: DialogState) -> None:
+    _set(state, step="journal_write", mode=None, data={})
+    await session.flush()
+    await _send(session, user, t(user.lang, "jr_ask"))
+
+
+async def _collect_journal(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
+    await add_journal_entry(session, user.id, text[:1000])
+    await progress.award(session, user.id, "journal_entry")
+    total = await count_journal_entries(session, user.id)
+    _set(state, step="menu", mode=None, data={})
+    await session.flush()
+    await _send(session, user, t(user.lang, "jr_saved", n=total))
+    await _show_journal(session, user, state)
+
+
+async def _journal_review(session: AsyncSession, user: User, state: DialogState) -> None:
+    entries = await get_journal_entries(session, user.id, limit=15)
+    if not entries:
+        await _send(session, user, t(user.lang, "jr_need_entries"))
+        await _show_journal(session, user, state)
+        return
+    await _send(session, user, t(user.lang, "jr_review_wait"))
+    prof = await get_profile(session, user.id)
+    profile_data = dict(prof.trainer or {})
+    journal_text = "\n".join(f"- {e.created_at:%d.%m}: {e.text}" for e in entries)
+    user_req = f"{t(user.lang, 'jr_user_req')}\n\n{journal_text}"
+    try:
+        answer = await ai.ask("journal_coach", user_req, profile_data=profile_data, lang=user.lang)
+    except Exception as e:  # noqa: BLE001
+        log.warning("journal review error: %s", e)
+        answer = t(user.lang, "ai_unavailable")
+    _set(state, step="menu", mode=None, data={})
+    await session.flush()
+    await _send(session, user, answer, buttons=_journal_buttons(user.lang, has_entries=True))
 
 
 # ── Oss (заглушка «скоро») ───────────────────────────────────────────────────────

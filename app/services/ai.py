@@ -34,11 +34,13 @@ MODES = {
     "dietolog": ("dietolog.txt", "diet"),
     # Генератор «План к соревнованиям» — одноразовый вызов из Тренера (не чат-режим).
     "comp_plan": ("comp_plan.txt", "trainer"),
+    # Разбор дневника тренировок — одноразовый вызов из «Дневника» (не чат-режим).
+    "journal_coach": ("journal_coach.txt", "trainer"),
 }
 
 # RAG-режим для поиска по базе знаний (если отличается от ключа MODES).
-# comp_plan берёт ту же базу, что тренер (вкл. 02_podgotovka_k_sorevnovaniyam).
-_RAG_MODE = {"comp_plan": "trainer"}
+# comp_plan/journal берут ту же базу, что тренер (вкл. 02_podgotovka_k_sorevnovaniyam).
+_RAG_MODE = {"comp_plan": "trainer", "journal_coach": "trainer"}
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 _clients: dict[str, AsyncOpenAI] = {}
