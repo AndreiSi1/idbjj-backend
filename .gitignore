@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.sqlite3
+
+# локальные бэкапы .env на сервере
+.env.bak*
+*.bak.*

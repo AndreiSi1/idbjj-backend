@@ -49,6 +49,7 @@ def _menu_buttons(lang: str | None):
         [(t(lang, "btn_progress"), "progress")],
         [(t(lang, "btn_oss"), "oss")],
         [(t(lang, "btn_contact"), "m:contact")],
+        [(t(lang, "btn_lang"), "lang_menu")],
     ]
 
 
@@ -179,6 +180,10 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
         await _start_comp(session, user, state)
     elif payload.startswith("cf:"):
         await _comp_format(session, user, state, payload.split(":", 1)[1])
+    elif payload == "lang_menu":
+        await _send(session, user, i18n.LANG_PROMPT, buttons=i18n.LANG_BUTTONS)
+    elif payload.startswith("lang:"):
+        await _change_lang(session, user, state, payload.split(":", 1)[1])
     else:
         log.info("unknown callback payload: %s", payload)
         await _show_menu(session, user, state)
@@ -221,6 +226,14 @@ async def _show_menu(session: AsyncSession, user: User, state: DialogState) -> N
     _set(state, step="menu", mode=None, data={})
     await session.flush()
     await _send(session, user, t(user.lang, "menu_text"), buttons=_menu_buttons(user.lang))
+
+
+async def _change_lang(session: AsyncSession, user: User, state: DialogState, choice: str) -> None:
+    """Смена языка уже выбравшим (из меню). Подтверждаем на НОВОМ языке и в меню."""
+    user.lang = choice if choice in i18n.LANGS else i18n.DEFAULT_LANG
+    await session.flush()
+    await _send(session, user, t(user.lang, "lang_changed"))
+    await _show_menu(session, user, state)
 
 
 async def _show_progress(session: AsyncSession, user: User, state: DialogState) -> None:

@@ -28,6 +28,12 @@
   .nav-links a:hover{color:var(--ink)}
   @media(max-width:760px){.nav-links a:not(.btn){display:none}}
 
+  .lang-switch{display:flex;gap:2px;align-items:center}
+  .lang-btn{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--mut);background:none;border:none;
+    cursor:pointer;padding:5px 7px;border-radius:6px;line-height:1;font-family:inherit;transition:color .15s,background .15s}
+  .lang-btn:hover{color:var(--ink)}
+  .lang-btn.active{color:var(--ink);background:var(--soft)}
+
   .hero{padding:88px 0 64px;border-bottom:1px solid var(--line)}
   .eyebrow{display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:18px}
   h1{font-size:clamp(2.4rem,7vw,5rem);line-height:.98;font-weight:900;letter-spacing:-.03em;max-width:17ch}
@@ -66,53 +72,156 @@
 <nav>
   <div class="logo"><b>ID</b>BJJ</div>
   <div class="nav-links">
-    <a href="#app">Возможности</a>
-    <a href="#oss">Oss</a>
-    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}">Открыть бота</a>
+    <a href="#app" data-i18n="nav_features">Возможности</a>
+    <a href="#oss" data-i18n="nav_oss">Oss</a>
+    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}" data-i18n="nav_openbot">Открыть бота</a>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="lang-btn" data-lang="ru" type="button">RU</button>
+      <button class="lang-btn" data-lang="en" type="button">EN</button>
+      <button class="lang-btn" data-lang="es" type="button">ES</button>
+      <button class="lang-btn" data-lang="pt" type="button">PT</button>
+    </div>
   </div>
 </nav>
 
 <header class="hero"><div class="wrap">
-  <span class="eyebrow">Бразильское джиу-джитсу</span>
-  <h1>Твой <em>BJJ-помощник</em> в кармане</h1>
-  <p class="sub">Онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса — всё в одном боте. Для джитсеров со всего мира, на любом поясе.</p>
+  <span class="eyebrow" data-i18n="hero_eyebrow">Бразильское джиу-джитсу</span>
+  <h1 data-i18n-html="hero_h1">Твой <em>BJJ-помощник</em> в кармане</h1>
+  <p class="sub" data-i18n="hero_sub">Онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса — всё в одном боте. Для джитсеров со всего мира, на любом поясе.</p>
   <div class="hero-cta">
-    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}">Открыть в Telegram</a>
-    <a class="btn btn-ghost" href="{{MAX_BOT_URL}}">Открыть в MAX</a>
+    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}" data-i18n="hero_tg">Открыть в Telegram</a>
+    <a class="btn btn-ghost" href="{{MAX_BOT_URL}}" data-i18n="hero_max">Открыть в MAX</a>
   </div>
 </div></header>
 
 <section id="app"><div class="wrap">
-  <h2>Что умеет помощник</h2>
-  <p class="lead">Личный AI-наставник, который учитывает твой профиль: пояс, стаж, цели и ограничения.</p>
+  <h2 data-i18n="app_h2">Что умеет помощник</h2>
+  <p class="lead" data-i18n="app_lead">Личный AI-наставник, который учитывает твой профиль: пояс, стаж, цели и ограничения.</p>
   <div class="mods">
-    <div class="mod"><div class="i">🥋</div><h3>Онлайн-тренер</h3><p>План и рекомендации с учётом твоего пояса, стажа и цели.</p></div>
-    <div class="mod"><div class="i">🏆</div><h3>Подготовка к стартам</h3><p>Gi/No-Gi, ОФП, техника и ментальная подготовка к соревнованиям.</p></div>
-    <div class="mod"><div class="i">📚</div><h3>Энциклопедия BJJ</h3><p>История, пояса, гарды, приёмы и чемпионы — по запросу.</p></div>
-    <div class="mod"><div class="i">🥗</div><h3>Диета</h3><p>Расчёт калорий и БЖУ, меню под тренировки и сгонку веса.</p></div>
-    <div class="mod"><div class="i">📈</div><h3>Мой прогресс</h3><p>Пояс, уровень и активность — твой путь в одном месте.</p></div>
-    <div class="mod"><div class="i">✉️</div><h3>Связь с тренером</h3><p>Быстрые ответы и заявка на занятие в твоём клубе.</p></div>
+    <div class="mod"><div class="i">🥋</div><h3 data-i18n="mod1_h">Онлайн-тренер</h3><p data-i18n="mod1_p">План и рекомендации с учётом твоего пояса, стажа и цели.</p></div>
+    <div class="mod"><div class="i">🏆</div><h3 data-i18n="mod2_h">Подготовка к стартам</h3><p data-i18n="mod2_p">Gi/No-Gi, ОФП, техника и ментальная подготовка к соревнованиям.</p></div>
+    <div class="mod"><div class="i">📚</div><h3 data-i18n="mod3_h">Энциклопедия BJJ</h3><p data-i18n="mod3_p">История, пояса, гарды, приёмы и чемпионы — по запросу.</p></div>
+    <div class="mod"><div class="i">🥗</div><h3 data-i18n="mod4_h">Диета</h3><p data-i18n="mod4_p">Расчёт калорий и БЖУ, меню под тренировки и сгонку веса.</p></div>
+    <div class="mod"><div class="i">📈</div><h3 data-i18n="mod5_h">Мой прогресс</h3><p data-i18n="mod5_p">Пояс, уровень и активность — твой путь в одном месте.</p></div>
+    <div class="mod"><div class="i">✉️</div><h3 data-i18n="mod6_h">Связь с тренером</h3><p data-i18n="mod6_p">Быстрые ответы и заявка на занятие в твоём клубе.</p></div>
   </div>
 </div></section>
 
 <section class="oss" id="oss"><div class="wrap">
   <div>
-    <span class="badge">🚧 Скоро</span>
-    <h2>Oss — соцсеть для своих</h2>
-    <p class="lead">Как Instagram, только для джитсеров. Лента тренировок, друзья и единомышленники, залы по всему миру, обмен опытом и достижениями. Сообщество, которое живёт на татами.</p>
-    <a class="btn" style="background:#fff;color:#0a0a0a;border-color:#fff" href="{{TELEGRAM_BOT_URL}}">Узнать о запуске в боте →</a>
+    <span class="badge" data-i18n="oss_badge">🚧 Скоро</span>
+    <h2 data-i18n="oss_h2">Oss — соцсеть для своих</h2>
+    <p class="lead" data-i18n="oss_lead">Как Instagram, только для джитсеров. Лента тренировок, друзья и единомышленники, залы по всему миру, обмен опытом и достижениями. Сообщество, которое живёт на татами.</p>
+    <a class="btn" style="background:#fff;color:#0a0a0a;border-color:#fff" href="{{TELEGRAM_BOT_URL}}" data-i18n="oss_btn">Узнать о запуске в боте →</a>
   </div>
   <div class="oss-card">
-    <div class="row"><span class="e">📷</span><span>Лента тренировок и роллов</span></div>
-    <div class="row"><span class="e">🤝</span><span>Друзья и партнёры по залу</span></div>
-    <div class="row"><span class="e">🌍</span><span>Залы и события по всему миру</span></div>
-    <div class="row"><span class="e">🏅</span><span>Прогресс, пояса, достижения</span></div>
+    <div class="row"><span class="e">📷</span><span data-i18n="oss_r1">Лента тренировок и роллов</span></div>
+    <div class="row"><span class="e">🤝</span><span data-i18n="oss_r2">Друзья и партнёры по залу</span></div>
+    <div class="row"><span class="e">🌍</span><span data-i18n="oss_r3">Залы и события по всему миру</span></div>
+    <div class="row"><span class="e">🏅</span><span data-i18n="oss_r4">Прогресс, пояса, достижения</span></div>
   </div>
 </div></section>
 
 <footer><div class="wrap">
-  <div>© ID BJJ — платформа для бразильского джиу-джитсу</div>
-  <div><a href="/terms">Пользовательское соглашение</a> · <a href="/privacy">Политика данных</a></div>
+  <div data-i18n="footer_copy">© ID BJJ — платформа для бразильского джиу-джитсу</div>
+  <div><a href="/terms" data-i18n="footer_terms">Пользовательское соглашение</a> · <a href="/privacy" data-i18n="footer_privacy">Политика данных</a></div>
 </div></footer>
 
+<script>
+// Клиентская локализация лендинга (RU/EN/ES/PT). Без сервера: контент переключается
+// на месте, выбор сохраняется в localStorage, по умолчанию — язык браузера.
+const I18N = {
+  ru:{nav_features:"Возможности",nav_oss:"Oss",nav_openbot:"Открыть бота",
+    hero_eyebrow:"Бразильское джиу-джитсу",hero_h1:"Твой <em>BJJ-помощник</em> в кармане",
+    hero_sub:"Онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса — всё в одном боте. Для джитсеров со всего мира, на любом поясе.",
+    hero_tg:"Открыть в Telegram",hero_max:"Открыть в MAX",
+    app_h2:"Что умеет помощник",app_lead:"Личный AI-наставник, который учитывает твой профиль: пояс, стаж, цели и ограничения.",
+    mod1_h:"Онлайн-тренер",mod1_p:"План и рекомендации с учётом твоего пояса, стажа и цели.",
+    mod2_h:"Подготовка к стартам",mod2_p:"Gi/No-Gi, ОФП, техника и ментальная подготовка к соревнованиям.",
+    mod3_h:"Энциклопедия BJJ",mod3_p:"История, пояса, гарды, приёмы и чемпионы — по запросу.",
+    mod4_h:"Диета",mod4_p:"Расчёт калорий и БЖУ, меню под тренировки и сгонку веса.",
+    mod5_h:"Мой прогресс",mod5_p:"Пояс, уровень и активность — твой путь в одном месте.",
+    mod6_h:"Связь с тренером",mod6_p:"Быстрые ответы и заявка на занятие в твоём клубе.",
+    oss_badge:"🚧 Скоро",oss_h2:"Oss — соцсеть для своих",
+    oss_lead:"Как Instagram, только для джитсеров. Лента тренировок, друзья и единомышленники, залы по всему миру, обмен опытом и достижениями. Сообщество, которое живёт на татами.",
+    oss_btn:"Узнать о запуске в боте →",
+    oss_r1:"Лента тренировок и роллов",oss_r2:"Друзья и партнёры по залу",oss_r3:"Залы и события по всему миру",oss_r4:"Прогресс, пояса, достижения",
+    footer_copy:"© ID BJJ — платформа для бразильского джиу-джитсу",footer_terms:"Пользовательское соглашение",footer_privacy:"Политика данных",
+    _title:"ID BJJ — твой помощник в бразильском джиу-джитсу",
+    _desc:"ID BJJ — персональный помощник в кармане для бразильского джиу-джитсу: онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса. Скоро — социальная сеть Oss для своих."},
+  en:{nav_features:"Features",nav_oss:"Oss",nav_openbot:"Open the bot",
+    hero_eyebrow:"Brazilian Jiu-Jitsu",hero_h1:"Your <em>BJJ assistant</em> in your pocket",
+    hero_sub:"Online coach, technique encyclopedia, nutrition calculator and progress tracker — all in one bot. For grapplers worldwide, at any belt.",
+    hero_tg:"Open in Telegram",hero_max:"Open in MAX",
+    app_h2:"What the assistant can do",app_lead:"A personal AI mentor that considers your profile: belt, experience, goals and limitations.",
+    mod1_h:"Online coach",mod1_p:"Plans and tips based on your belt, experience and goal.",
+    mod2_h:"Competition prep",mod2_p:"Gi/No-Gi, conditioning, technique and mental prep for tournaments.",
+    mod3_h:"BJJ Encyclopedia",mod3_p:"History, belts, guards, techniques and champions — on demand.",
+    mod4_h:"Nutrition",mod4_p:"Calorie and macro calculation, meal plans for training and weight cuts.",
+    mod5_h:"My progress",mod5_p:"Belt, level and activity — your journey in one place.",
+    mod6_h:"Contact a coach",mod6_p:"Quick answers and a class request at your club.",
+    oss_badge:"🚧 Soon",oss_h2:"Oss — the social network for your tribe",
+    oss_lead:"Like Instagram, but for grapplers. A training feed, friends and like-minded people, gyms worldwide, sharing experience and achievements. A community that lives on the mats.",
+    oss_btn:"Get launch news in the bot →",
+    oss_r1:"Feed of training and rolls",oss_r2:"Friends and gym partners",oss_r3:"Gyms and events worldwide",oss_r4:"Progress, belts, achievements",
+    footer_copy:"© ID BJJ — a platform for Brazilian Jiu-Jitsu",footer_terms:"Terms of Use",footer_privacy:"Privacy Policy",
+    _title:"ID BJJ — your Brazilian Jiu-Jitsu assistant",
+    _desc:"ID BJJ — a personal pocket assistant for Brazilian Jiu-Jitsu: online coach, technique encyclopedia, nutrition and progress tracking. Coming soon — the Oss social network."},
+  es:{nav_features:"Funciones",nav_oss:"Oss",nav_openbot:"Abrir el bot",
+    hero_eyebrow:"Jiu-Jitsu Brasileño",hero_h1:"Tu <em>asistente de BJJ</em> en el bolsillo",
+    hero_sub:"Entrenador online, enciclopedia de técnicas, cálculo de nutrición y seguimiento del progreso — todo en un bot. Para grapplers de todo el mundo, en cualquier cinturón.",
+    hero_tg:"Abrir en Telegram",hero_max:"Abrir en MAX",
+    app_h2:"Qué puede hacer el asistente",app_lead:"Un mentor de IA personal que tiene en cuenta tu perfil: cinturón, experiencia, objetivos y limitaciones.",
+    mod1_h:"Entrenador online",mod1_p:"Planes y consejos según tu cinturón, experiencia y objetivo.",
+    mod2_h:"Preparación para competir",mod2_p:"Gi/No-Gi, preparación física, técnica y mental para torneos.",
+    mod3_h:"Enciclopedia BJJ",mod3_p:"Historia, cinturones, guardias, técnicas y campeones — cuando quieras.",
+    mod4_h:"Nutrición",mod4_p:"Cálculo de calorías y macros, menús para entrenar y cortar peso.",
+    mod5_h:"Mi progreso",mod5_p:"Cinturón, nivel y actividad — tu camino en un solo lugar.",
+    mod6_h:"Contacto con el coach",mod6_p:"Respuestas rápidas y solicitud de clase en tu club.",
+    oss_badge:"🚧 Pronto",oss_h2:"Oss — la red social de los tuyos",
+    oss_lead:"Como Instagram, pero para grapplers. Feed de entrenamientos, amigos y afines, gimnasios de todo el mundo, intercambio de experiencia y logros. Una comunidad que vive en el tatami.",
+    oss_btn:"Conoce el lanzamiento en el bot →",
+    oss_r1:"Feed de entrenamientos y rolls",oss_r2:"Amigos y compañeros de gimnasio",oss_r3:"Gimnasios y eventos en todo el mundo",oss_r4:"Progreso, cinturones, logros",
+    footer_copy:"© ID BJJ — plataforma de Jiu-Jitsu Brasileño",footer_terms:"Términos de uso",footer_privacy:"Política de datos",
+    _title:"ID BJJ — tu asistente de Jiu-Jitsu Brasileño",
+    _desc:"ID BJJ — asistente personal de bolsillo para Jiu-Jitsu Brasileño: entrenador online, enciclopedia de técnicas, nutrición y seguimiento del progreso. Pronto — la red social Oss."},
+  pt:{nav_features:"Recursos",nav_oss:"Oss",nav_openbot:"Abrir o bot",
+    hero_eyebrow:"Jiu-Jitsu Brasileiro",hero_h1:"Seu <em>assistente de BJJ</em> no bolso",
+    hero_sub:"Treinador online, enciclopédia de técnicas, cálculo de nutrição e acompanhamento de progresso — tudo em um bot. Para grapplers do mundo todo, em qualquer faixa.",
+    hero_tg:"Abrir no Telegram",hero_max:"Abrir no MAX",
+    app_h2:"O que o assistente faz",app_lead:"Um mentor de IA pessoal que considera o seu perfil: faixa, experiência, objetivos e limitações.",
+    mod1_h:"Treinador online",mod1_p:"Planos e dicas conforme sua faixa, experiência e objetivo.",
+    mod2_h:"Preparação para competições",mod2_p:"Gi/No-Gi, preparo físico, técnica e mental para campeonatos.",
+    mod3_h:"Enciclopédia de BJJ",mod3_p:"História, faixas, guardas, técnicas e campeões — quando quiser.",
+    mod4_h:"Nutrição",mod4_p:"Cálculo de calorias e macros, cardápios para treino e corte de peso.",
+    mod5_h:"Meu progresso",mod5_p:"Faixa, nível e atividade — sua jornada em um só lugar.",
+    mod6_h:"Contato com o treinador",mod6_p:"Respostas rápidas e pedido de aula no seu clube.",
+    oss_badge:"🚧 Em breve",oss_h2:"Oss — a rede social dos seus",
+    oss_lead:"Como o Instagram, mas para grapplers. Feed de treinos, amigos e pessoas afins, academias pelo mundo, troca de experiência e conquistas. Uma comunidade que vive no tatame.",
+    oss_btn:"Saiba do lançamento no bot →",
+    oss_r1:"Feed de treinos e rolas",oss_r2:"Amigos e parceiros de academia",oss_r3:"Academias e eventos pelo mundo",oss_r4:"Progresso, faixas, conquistas",
+    footer_copy:"© ID BJJ — plataforma de Jiu-Jitsu Brasileiro",footer_terms:"Termos de uso",footer_privacy:"Política de dados",
+    _title:"ID BJJ — seu assistente de Jiu-Jitsu Brasileiro",
+    _desc:"ID BJJ — assistente pessoal de bolso para Jiu-Jitsu Brasileiro: treinador online, enciclopédia de técnicas, nutrição e acompanhamento de progresso. Em breve — a rede social Oss."}
+};
+function applyLang(l){
+  if(!I18N[l]) l="ru";
+  const d=I18N[l];
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const v=d[el.dataset.i18n];if(v!=null)el.textContent=v;});
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{const v=d[el.dataset.i18nHtml];if(v!=null)el.innerHTML=v;});
+  document.documentElement.lang=l;
+  if(d._title)document.title=d._title;
+  const m=document.querySelector('meta[name="description"]');
+  if(m&&d._desc)m.setAttribute("content",d._desc);
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("active",b.dataset.lang===l));
+  try{localStorage.setItem("idbjj_lang",l);}catch(e){}
+}
+(function(){
+  let saved=null;
+  try{saved=localStorage.getItem("idbjj_lang");}catch(e){}
+  const nav=(navigator.language||"ru").slice(0,2).toLowerCase();
+  applyLang(saved||(I18N[nav]?nav:"ru"));
+  document.querySelectorAll(".lang-btn").forEach(b=>b.addEventListener("click",()=>applyLang(b.dataset.lang)));
+})();
+</script>
 </body></html>
