@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.models import DialogState, Lead, User
-from app.services import ai, i18n, messenger, progress
+from app.services import ai, i18n, messenger, progress, share_card
 from app.services.i18n import t
 from app.services.repo import (
     add_journal_entry,
@@ -182,6 +182,8 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
         await _show_progress(session, user, state)
     elif payload == "journal":
         await _show_journal(session, user, state)
+    elif payload == "share:progress":
+        await _share_progress(session, user, state)
     elif payload == "jr:add":
         await _journal_add(session, user, state)
     elif payload == "jr:review":
@@ -257,9 +259,50 @@ async def _change_lang(session: AsyncSession, user: User, state: DialogState, ch
     await _show_menu(session, user, state)
 
 
+def _progress_buttons(lang: str | None):
+    return [
+        [(t(lang, "btn_share_progress"), "share:progress")],
+        [(t(lang, "btn_menu"), "menu")],
+    ]
+
+
 async def _show_progress(session: AsyncSession, user: User, state: DialogState) -> None:
     p = await progress.get(session, user.id)
-    await _send(session, user, progress.render(p, user.lang), buttons=_hint_buttons(user.lang))
+    await _send(session, user, progress.render(p, user.lang), buttons=_progress_buttons(user.lang))
+
+
+async def _share_progress(session: AsyncSession, user: User, state: DialogState) -> None:
+    """Карточка прогресса PNG в свой канал (Telegram). MAX/ошибка → текстовый фолбэк.
+    В подписи — deep-link с меткой ?start=share (атрибуция вирусных установок)."""
+    p = await progress.get(session, user.id)
+    info = progress.level_info(p.xp or 0)
+    belt_label = i18n.belt_label(p.belt, user.lang) if p.belt else "—"
+    bot_url = settings.telegram_bot_url or "https://t.me/ID_BJJ_onlinebot"
+    sep = "&" if "?" in bot_url else "?"
+    caption = t(
+        user.lang, "share_caption",
+        belt=belt_label, title=i18n.level_title(info["level"], user.lang),
+        level=info["level"], url=f"{bot_url}{sep}start=share",
+    )
+    image: bytes | None = None
+    try:
+        image = share_card.render_progress_card(
+            belt=p.belt, stripes=p.stripes or 0, xp=p.xp or 0,
+            name=user.full_name, lang=user.lang,
+        )
+    except Exception as e:  # noqa: BLE001 — рендер не должен ронять диалог
+        log.warning("share card render failed: %s", e)
+
+    sent = False
+    if image is not None:
+        sent = await messenger.send_photo(
+            user.channel, user.ext_id, image, caption=caption,
+            buttons=_hint_buttons(user.lang),
+        )
+        if sent:
+            await log_message(session, user.id, "out", "[карточка прогресса]")
+    if not sent:  # MAX или ошибка рендера/отправки — текст + ссылка
+        await _send(session, user, caption, buttons=_hint_buttons(user.lang))
 
 
 # ── AI-режимы ──────────────────────────────────────────────────────────────────────

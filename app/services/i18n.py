@@ -129,6 +129,9 @@ T: dict[str, dict[str, str]] = {
         "pg_level": "Уровень",
         "pg_to_next": "До следующего уровня",
         "pg_hint": "XP начисляется за анкеты, вопросы ассистентам и заявки. Возвращайся чаще! 💪",
+        "btn_share_progress": "📤 Поделиться карточкой",
+        "card_level": "Уровень",
+        "share_caption": "🥋 Мой прогресс в BJJ: {belt}, {title} (уровень {level}). Качаю джиу-джитсу с ID BJJ 👉 {url}",
     },
     "en": {
         "consent": (
@@ -210,6 +213,9 @@ T: dict[str, dict[str, str]] = {
         "pg_level": "Level",
         "pg_to_next": "To next level",
         "pg_hint": "XP is earned for forms, AI questions and requests. Come back often! 💪",
+        "btn_share_progress": "📤 Share my card",
+        "card_level": "Level",
+        "share_caption": "🥋 My BJJ progress: {belt}, {title} (level {level}). Leveling up my jiu-jitsu with ID BJJ 👉 {url}",
     },
     "es": {
         "consent": (
@@ -291,6 +297,9 @@ T: dict[str, dict[str, str]] = {
         "pg_level": "Nivel",
         "pg_to_next": "Para el siguiente nivel",
         "pg_hint": "Ganas XP por formularios, preguntas a la IA y solicitudes. ¡Vuelve seguido! 💪",
+        "btn_share_progress": "📤 Compartir tarjeta",
+        "card_level": "Nivel",
+        "share_caption": "🥋 Mi progreso en BJJ: {belt}, {title} (nivel {level}). Mejorando mi jiu-jitsu con ID BJJ 👉 {url}",
     },
     "pt": {
         "consent": (
@@ -372,6 +381,9 @@ T: dict[str, dict[str, str]] = {
         "pg_level": "Nível",
         "pg_to_next": "Para o próximo nível",
         "pg_hint": "Você ganha XP por formulários, perguntas à IA e solicitações. Volte sempre! 💪",
+        "btn_share_progress": "📤 Compartilhar card",
+        "card_level": "Nível",
+        "share_caption": "🥋 Meu progresso no BJJ: {belt}, {title} (nível {level}). Evoluindo meu jiu-jitsu com ID BJJ 👉 {url}",
     },
 }
 

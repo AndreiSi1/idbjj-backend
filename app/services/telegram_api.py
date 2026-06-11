@@ -13,6 +13,7 @@ Telegram разрешает проактивные сообщения (см. app
 """
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
@@ -62,6 +63,33 @@ async def send_message(chat_id: str, text: str, buttons: list[list[Button]] | No
         body["reply_markup"] = markup
     resp = await _post("sendMessage", body)
     return resp is not None
+
+
+async def send_photo(
+    chat_id: str, image: bytes, caption: str | None = None,
+    buttons: list[list[Button]] | None = None,
+) -> bool:
+    """Отправить фото (байты PNG) с подписью и кнопками — multipart sendPhoto."""
+    if not settings.telegram_bot_token:
+        log.warning("TELEGRAM_BOT_TOKEN is empty — skipping sendPhoto")
+        return False
+    data: dict[str, Any] = {"chat_id": str(chat_id)}
+    if caption:
+        data["caption"] = caption
+    markup = _reply_markup(buttons)
+    if markup:
+        data["reply_markup"] = json.dumps(markup)
+    files = {"photo": ("card.png", image, "image/png")}
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as http:
+            r = await http.post(_url("sendPhoto"), data=data, files=files)
+        if r.status_code >= 400:
+            log.warning("TG sendPhoto -> %s: %s", r.status_code, r.text[:300])
+            return False
+        return True
+    except httpx.HTTPError as e:
+        log.warning("TG sendPhoto error: %s", e)
+        return False
 
 
 async def answer_callback(callback_id: str, notification: str | None = None) -> bool:

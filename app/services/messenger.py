@@ -19,6 +19,17 @@ async def send_message(
     return await max_api.send_message(ext_id, text, buttons)
 
 
+async def send_photo(
+    channel: str, ext_id: str, image: bytes, caption: str | None = None,
+    buttons: list[list[Button]] | None = None,
+) -> bool:
+    """Отправить картинку. Пока поддержан Telegram; для MAX возвращаем False —
+    вызывающий код делает текстовый фолбэк (загрузка медиа в MAX — отдельный шаг)."""
+    if channel == "telegram":
+        return await telegram_api.send_photo(ext_id, image, caption, buttons)
+    return False
+
+
 async def answer_callback(channel: str, callback_id: str, notification: str | None = None) -> bool:
     if not callback_id:
         return False
