@@ -26,7 +26,13 @@
   .nav-links{display:flex;gap:26px;align-items:center}
   .nav-links a{color:var(--mut);font-size:14px;font-weight:600}
   .nav-links a:hover{color:var(--ink)}
-  @media(max-width:760px){.nav-links a:not(.btn){display:none}}
+  @media(max-width:760px){
+    nav{padding:12px 16px}
+    .nav-links{gap:12px}
+    .nav-links a:not(.btn){display:none}
+    .nav-links a.btn{padding:9px 14px;font-size:13px;white-space:nowrap;flex-shrink:0}
+    .lang-btn{padding:5px 5px}
+  }
 
   .lang-switch{display:flex;gap:2px;align-items:center}
   .lang-btn{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--mut);background:none;border:none;
