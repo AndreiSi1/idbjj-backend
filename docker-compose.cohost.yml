@@ -1,0 +1,53 @@
+# Co-host вариант: разворачивание РЯДОМ с другими сервисами на общем VPS,
+# где уже работает nginx-proxy + acme-companion (как на 217.26.25.228).
+# Свой Caddy НЕ поднимаем — встраиваемся в существующий реверс-прокси по домену.
+#
+# Запуск:  docker compose -f docker-compose.cohost.yml up -d --build
+# Требует в .env:  BOT_DOMAIN, LETSENCRYPT_EMAIL (+ обычные токены/ключи).
+#
+# `name: idbjj` изолирует проект: контейнеры idbjj-*, своя сеть/том —
+# ничего не пересекается с sidorenko-sales и прочими.
+
+name: idbjj
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: idbjj
+      POSTGRES_USER: idbjj
+      POSTGRES_PASSWORD: idbjj
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idbjj"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+    restart: unless-stopped
+
+  api:
+    build: .
+    env_file: .env
+    # nginx-proxy и acme-companion читают эти переменные из контейнера:
+    environment:
+      - VIRTUAL_HOST=${BOT_DOMAIN}
+      - VIRTUAL_PORT=8000
+      - LETSENCRYPT_HOST=${BOT_DOMAIN}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal, proxy_net]   # internal — к своему Postgres; proxy_net — к nginx-proxy
+    restart: unless-stopped
+
+networks:
+  internal:
+  proxy_net:
+    external: true        # уже существует на сервере (сеть nginx-proxy)
+
+volumes:
+  pg_data:

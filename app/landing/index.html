@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ID BJJ — твой помощник в бразильском джиу-джитсу</title>
+<meta name="description" content="ID BJJ — персональный помощник в кармане для бразильского джиу-джитсу: онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса. Скоро — социальная сеть Oss для своих.">
+<style>
+  :root{--bg:#ffffff;--ink:#0a0a0a;--mut:#6b7280;--line:#e7e7e7;--soft:#f6f6f6;--maxw:1120px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;border-radius:8px;cursor:pointer;border:2px solid var(--ink);padding:13px 22px;transition:transform .15s,background .15s,color .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{background:#222}
+  .btn-ghost{background:#fff;color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:#fff}
+
+  nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .logo{font-weight:900;letter-spacing:.06em;font-size:18px}
+  .logo b{border:2px solid var(--ink);padding:1px 6px;margin-right:6px}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--mut);font-size:14px;font-weight:600}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:760px){.nav-links a:not(.btn){display:none}}
+
+  .hero{padding:88px 0 64px;border-bottom:1px solid var(--line)}
+  .eyebrow{display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:18px}
+  h1{font-size:clamp(2.4rem,7vw,5rem);line-height:.98;font-weight:900;letter-spacing:-.03em;max-width:17ch}
+  h1 em{font-style:normal;border-bottom:5px solid var(--ink)}
+  .sub{color:var(--mut);font-size:clamp(1rem,2.2vw,1.25rem);max-width:50ch;margin:22px 0 32px}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+
+  section{padding:80px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:900;letter-spacing:-.02em;margin-bottom:14px}
+  .lead{color:var(--mut);font-size:1.1rem;max-width:60ch;margin-bottom:40px}
+  .mods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.mods{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.mods{grid-template-columns:1fr}}
+  .mod{border:1px solid var(--line);border-radius:14px;padding:22px}
+  .mod .i{font-size:26px}
+  .mod h3{font-size:1.05rem;margin:10px 0 6px;font-weight:800}
+  .mod p{color:var(--mut);font-size:.93rem}
+
+  .oss{background:var(--ink);color:#fff;border:none}
+  .oss .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+  @media(max-width:760px){.oss .wrap{grid-template-columns:1fr}}
+  .oss h2{color:#fff}
+  .oss .lead{color:#cfcfcf}
+  .badge{display:inline-block;background:#fff;color:#0a0a0a;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;border-radius:100px;margin-bottom:18px}
+  .oss-card{border:1px solid #333;border-radius:18px;padding:26px;background:#111}
+  .oss-card .row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #222;color:#d8d8d8}
+  .oss-card .row:last-child{border-bottom:none}
+  .oss-card .e{font-size:20px}
+
+  footer{padding:36px 0;color:var(--mut);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer a{text-decoration:underline}
+</style></head>
+<body>
+
+<nav>
+  <div class="logo"><b>ID</b>BJJ</div>
+  <div class="nav-links">
+    <a href="#app">Возможности</a>
+    <a href="#oss">Oss</a>
+    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}">Открыть бота</a>
+  </div>
+</nav>
+
+<header class="hero"><div class="wrap">
+  <span class="eyebrow">Бразильское джиу-джитсу</span>
+  <h1>Твой <em>BJJ-помощник</em> в кармане</h1>
+  <p class="sub">Онлайн-тренер, энциклопедия техник, расчёт питания и трекер прогресса — всё в одном боте. Для джитсеров со всего мира, на любом поясе.</p>
+  <div class="hero-cta">
+    <a class="btn btn-dark" href="{{TELEGRAM_BOT_URL}}">Открыть в Telegram</a>
+    <a class="btn btn-ghost" href="{{MAX_BOT_URL}}">Открыть в MAX</a>
+  </div>
+</div></header>
+
+<section id="app"><div class="wrap">
+  <h2>Что умеет помощник</h2>
+  <p class="lead">Личный AI-наставник, который учитывает твой профиль: пояс, стаж, цели и ограничения.</p>
+  <div class="mods">
+    <div class="mod"><div class="i">🥋</div><h3>Онлайн-тренер</h3><p>План и рекомендации с учётом твоего пояса, стажа и цели.</p></div>
+    <div class="mod"><div class="i">🏆</div><h3>Подготовка к стартам</h3><p>Gi/No-Gi, ОФП, техника и ментальная подготовка к соревнованиям.</p></div>
+    <div class="mod"><div class="i">📚</div><h3>Энциклопедия BJJ</h3><p>История, пояса, гарды, приёмы и чемпионы — по запросу.</p></div>
+    <div class="mod"><div class="i">🥗</div><h3>Диета</h3><p>Расчёт калорий и БЖУ, меню под тренировки и сгонку веса.</p></div>
+    <div class="mod"><div class="i">📈</div><h3>Мой прогресс</h3><p>Пояс, уровень и активность — твой путь в одном месте.</p></div>
+    <div class="mod"><div class="i">✉️</div><h3>Связь с тренером</h3><p>Быстрые ответы и заявка на занятие в твоём клубе.</p></div>
+  </div>
+</div></section>
+
+<section class="oss" id="oss"><div class="wrap">
+  <div>
+    <span class="badge">🚧 Скоро</span>
+    <h2>Oss — соцсеть для своих</h2>
+    <p class="lead">Как Instagram, только для джитсеров. Лента тренировок, друзья и единомышленники, залы по всему миру, обмен опытом и достижениями. Сообщество, которое живёт на татами.</p>
+    <a class="btn" style="background:#fff;color:#0a0a0a;border-color:#fff" href="{{TELEGRAM_BOT_URL}}">Узнать о запуске в боте →</a>
+  </div>
+  <div class="oss-card">
+    <div class="row"><span class="e">📷</span><span>Лента тренировок и роллов</span></div>
+    <div class="row"><span class="e">🤝</span><span>Друзья и партнёры по залу</span></div>
+    <div class="row"><span class="e">🌍</span><span>Залы и события по всему миру</span></div>
+    <div class="row"><span class="e">🏅</span><span>Прогресс, пояса, достижения</span></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div>© ID BJJ — платформа для бразильского джиу-джитсу</div>
+  <div><a href="/terms">Пользовательское соглашение</a> · <a href="/privacy">Политика данных</a></div>
+</div></footer>
+
+</body></html>
