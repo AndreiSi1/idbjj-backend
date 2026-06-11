@@ -186,6 +186,8 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
         await _journal_add(session, user, state)
     elif payload == "jr:review":
         await _journal_review(session, user, state)
+    elif payload == "jr:plan":
+        await _journal_gameplan(session, user, state)
     elif payload == "oss":
         await _show_oss(session, user, state)
     elif payload == "m:contact":
@@ -398,6 +400,7 @@ def _journal_buttons(lang: str | None, *, has_entries: bool):
     rows = [[(t(lang, "btn_jr_add"), "jr:add")]]
     if has_entries:
         rows.append([(t(lang, "btn_jr_review"), "jr:review")])
+        rows.append([(t(lang, "btn_jr_plan"), "jr:plan")])
     rows.append([(t(lang, "btn_menu"), "menu")])
     return rows
 
@@ -434,25 +437,43 @@ async def _collect_journal(session: AsyncSession, user: User, state: DialogState
     await _show_journal(session, user, state)
 
 
-async def _journal_review(session: AsyncSession, user: User, state: DialogState) -> None:
+async def _journal_ai(
+    session: AsyncSession, user: User, state: DialogState,
+    *, ai_mode: str, wait_key: str, req_key: str,
+) -> None:
+    """Общий путь для «Разбор» и «Геймплан»: дневник + профиль → AI-режим."""
     entries = await get_journal_entries(session, user.id, limit=15)
     if not entries:
         await _send(session, user, t(user.lang, "jr_need_entries"))
         await _show_journal(session, user, state)
         return
-    await _send(session, user, t(user.lang, "jr_review_wait"))
+    await _send(session, user, t(user.lang, wait_key))
     prof = await get_profile(session, user.id)
     profile_data = dict(prof.trainer or {})
     journal_text = "\n".join(f"- {e.created_at:%d.%m}: {e.text}" for e in entries)
-    user_req = f"{t(user.lang, 'jr_user_req')}\n\n{journal_text}"
+    user_req = f"{t(user.lang, req_key)}\n\n{journal_text}"
     try:
-        answer = await ai.ask("journal_coach", user_req, profile_data=profile_data, lang=user.lang)
+        answer = await ai.ask(ai_mode, user_req, profile_data=profile_data, lang=user.lang)
     except Exception as e:  # noqa: BLE001
-        log.warning("journal review error: %s", e)
+        log.warning("journal %s error: %s", ai_mode, e)
         answer = t(user.lang, "ai_unavailable")
     _set(state, step="menu", mode=None, data={})
     await session.flush()
     await _send(session, user, answer, buttons=_journal_buttons(user.lang, has_entries=True))
+
+
+async def _journal_review(session: AsyncSession, user: User, state: DialogState) -> None:
+    await _journal_ai(
+        session, user, state,
+        ai_mode="journal_coach", wait_key="jr_review_wait", req_key="jr_user_req",
+    )
+
+
+async def _journal_gameplan(session: AsyncSession, user: User, state: DialogState) -> None:
+    await _journal_ai(
+        session, user, state,
+        ai_mode="gameplan", wait_key="jr_plan_wait", req_key="jr_plan_req",
+    )
 
 
 # ── Oss (заглушка «скоро») ───────────────────────────────────────────────────────

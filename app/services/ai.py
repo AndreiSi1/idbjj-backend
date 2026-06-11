@@ -36,11 +36,13 @@ MODES = {
     "comp_plan": ("comp_plan.txt", "trainer"),
     # Разбор дневника тренировок — одноразовый вызов из «Дневника» (не чат-режим).
     "journal_coach": ("journal_coach.txt", "trainer"),
+    # Геймплан из дневника — карта игры (дерево позиций/переходов). Одноразовый вызов.
+    "gameplan": ("gameplan.txt", "trainer"),
 }
 
 # RAG-режим для поиска по базе знаний (если отличается от ключа MODES).
-# comp_plan/journal берут ту же базу, что тренер (вкл. 02_podgotovka_k_sorevnovaniyam).
-_RAG_MODE = {"comp_plan": "trainer", "journal_coach": "trainer"}
+# comp_plan/journal/gameplan берут ту же базу, что тренер (вкл. 02_podgotovka_k_sorevnovaniyam).
+_RAG_MODE = {"comp_plan": "trainer", "journal_coach": "trainer", "gameplan": "trainer"}
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 _clients: dict[str, AsyncOpenAI] = {}
