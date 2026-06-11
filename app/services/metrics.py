@@ -64,6 +64,18 @@ async def belts(session: AsyncSession) -> list[dict]:
     return out
 
 
+async def sources(session: AsyncSession) -> list[dict]:
+    """Откуда пришли юзеры (атрибуция deep-link). NULL → «прямой/—»."""
+    rows = (
+        await session.execute(
+            select(User.source, func.count().label("cnt"))
+            .group_by(User.source)
+            .order_by(func.count().desc())
+        )
+    ).all()
+    return [{"source": r.source or "—", "count": int(r.cnt)} for r in rows]
+
+
 async def _daily(session: AsyncSession, model, days: int = 30) -> list[dict]:
     day = func.date(model.created_at).label("day")
     rows = (
@@ -88,7 +100,7 @@ async def recent_leads(session: AsyncSession, limit: int = 30) -> list[dict]:
         await session.execute(
             select(
                 Lead.id, Lead.kind, Lead.phone, Lead.created_at,
-                User.full_name, User.username, User.ext_id, User.channel,
+                User.full_name, User.username, User.ext_id, User.channel, User.source,
             )
             .join(User, User.id == Lead.user_id)
             .order_by(Lead.id.desc())
@@ -102,6 +114,7 @@ async def recent_leads(session: AsyncSession, limit: int = 30) -> list[dict]:
             "phone": r.phone,
             "name": r.full_name or r.username or f"id{r.ext_id}",
             "channel": r.channel,
+            "source": r.source or "—",
             "at": r.created_at.isoformat() if r.created_at else None,
         }
         for r in rows
@@ -113,5 +126,6 @@ async def dashboard(session: AsyncSession) -> dict:
         "summary": await summary(session),
         "growth": await growth(session),
         "belts": await belts(session),
+        "sources": await sources(session),
         "recent_leads": await recent_leads(session),
     }

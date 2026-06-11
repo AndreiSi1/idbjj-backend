@@ -17,6 +17,27 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 
+def _sanitize_source(raw: str | None) -> str | None:
+    """Источник атрибуции: только [a-z0-9_-], нижний регистр, до 64 символов."""
+    if not raw:
+        return None
+    s = "".join(c for c in raw.strip().lower() if c.isalnum() or c in "_-")
+    return s[:64] or None
+
+
+def _extract_source(text: str | None, payload: str | None) -> tuple[str | None, str | None]:
+    """Из deep-link «/start <src>» вытащить источник и нормализовать текст до «/start».
+    Если источник передан отдельно (payload, как в MAX) — берём его.
+    Возвращает (text, source)."""
+    source = _sanitize_source(payload)
+    if text and text.startswith("/start"):
+        parts = text.split(maxsplit=1)
+        if len(parts) > 1:
+            source = source or _sanitize_source(parts[1])
+            text = "/start"
+    return text, source
+
+
 # ── MAX ──────────────────────────────────────────────────────────────────────────
 
 @router.post("/max/{secret}")
@@ -79,9 +100,12 @@ async def _dispatch_max(session: AsyncSession, update: dict[str, Any]) -> None:
             return
         body = message.get("body") or {}
         text = body.get("text") if isinstance(body, dict) else None
+        # MAX: payload deep-link приходит в bot_started (атрибуция источника).
+        source = update.get("payload") if utype == "bot_started" else None
+        text, source = _extract_source(text, source)
         await dialog.handle_update(
             session, channel="max", ext_id=ext_id, full_name=full_name,
-            text=text if text is not None else "/start",
+            text=text if text is not None else "/start", source=source,
         )
         return
     # bot_added / bot_removed / unknown — игнорируем
@@ -136,10 +160,12 @@ async def _dispatch_telegram(session: AsyncSession, update: dict[str, Any]) -> N
         if not ext_id:
             return
         text = message.get("text")
+        # Telegram: deep-link «/start <payload>» — извлекаем источник, текст нормализуем.
+        text, source = _extract_source(text, None)
         # /start без текста и прочие служебные — трактуем как меню
         await dialog.handle_update(
             session, channel="telegram", ext_id=ext_id, full_name=full_name,
-            text=text if text is not None else "/start",
+            text=text if text is not None else "/start", source=source,
         )
         return
     log.info("telegram update ignored (no message/callback)")

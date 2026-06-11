@@ -8,7 +8,8 @@ from app.db.models import DialogState, Message, Profile, User
 
 
 async def upsert_user(
-    session: AsyncSession, channel: str, ext_id: str, *, full_name: str | None = None
+    session: AsyncSession, channel: str, ext_id: str, *,
+    full_name: str | None = None, source: str | None = None,
 ) -> User:
     user = (
         await session.execute(
@@ -16,11 +17,19 @@ async def upsert_user(
         )
     ).scalar_one_or_none()
     if user is None:
-        user = User(channel=channel, ext_id=ext_id, full_name=full_name)
+        user = User(channel=channel, ext_id=ext_id, full_name=full_name, source=source)
         session.add(user)
         await session.flush()
-    elif full_name and not user.full_name:
+        return user
+    # Существующий: дозаполняем имя и источник, но НЕ перезаписываем (first-touch).
+    changed = False
+    if full_name and not user.full_name:
         user.full_name = full_name
+        changed = True
+    if source and not user.source:
+        user.source = source
+        changed = True
+    if changed:
         await session.flush()
     return user
 

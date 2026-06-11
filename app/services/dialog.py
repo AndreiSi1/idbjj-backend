@@ -111,8 +111,9 @@ async def handle_update(
     text: str | None = None,
     callback_payload: str | None = None,
     callback_id: str | None = None,
+    source: str | None = None,
 ) -> None:
-    user = await upsert_user(session, channel, ext_id, full_name=full_name)
+    user = await upsert_user(session, channel, ext_id, full_name=full_name, source=source)
     if text:
         await log_message(session, user.id, "in", text)
     state = await get_state(session, user.id)

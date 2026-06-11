@@ -190,6 +190,12 @@ _PAGE = """<!doctype html>
       <div class="box"><canvas id="growth"></canvas></div>
       <div class="box" style="max-width:360px"><canvas id="belts"></canvas></div>
     </div>
+    <div class="row">
+      <div class="box" style="max-width:480px">
+        <div class="mut" style="font-weight:700;margin-bottom:4px">Источники трафика (deep-link ?start=)</div>
+        <table id="sources-t"></table>
+      </div>
+    </div>
   </section>
 
   <section id="leads" class="hidden"><table id="leads-t"></table></section>
@@ -239,14 +245,17 @@ async function loadDash(){
   bChart=new Chart($('#belts'),{type:'doughnut',data:{labels:d.belts.map(b=>b.label),
     datasets:[{data:d.belts.map(b=>b.count),backgroundColor:['#e5e7eb','#3b82f6','#8b5cf6','#92400e','#111827','#9ca3af']}]},
     options:{plugins:{title:{display:true,text:'Пояса'},legend:{position:'bottom'}}}});
+  const src=d.sources||[];
+  $('#sources-t').innerHTML='<tr><th>Источник</th><th>Юзеров</th></tr>'+
+    (src.map(x=>`<tr><td>${esc(x.source)}</td><td>${x.count}</td></tr>`).join('')||'<tr><td class="mut">Пусто</td></tr>');
 }
 function series(label,arr,color){return{label,data:arr.map(x=>x.count),borderColor:color,backgroundColor:color,tension:.3};}
 function scales(){return{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},beginAtZero:true}};}
 
 async function loadLeads(){
   const d=await api('/admin/leads');
-  $('#leads-t').innerHTML='<tr><th>#</th><th>Тип</th><th>Имя</th><th>Канал</th><th>Телефон</th><th>Дата</th></tr>'+
-    (d.leads.map(l=>`<tr><td>${l.id}</td><td>${esc(l.kind)}</td><td>${esc(l.name)}</td><td>${l.channel}</td><td>${esc(l.phone||'')}</td><td class="mut">${(l.at||'').slice(0,16).replace('T',' ')}</td></tr>`).join('')||'<tr><td class="mut">Пусто</td></tr>');
+  $('#leads-t').innerHTML='<tr><th>#</th><th>Тип</th><th>Имя</th><th>Канал</th><th>Источник</th><th>Телефон</th><th>Дата</th></tr>'+
+    (d.leads.map(l=>`<tr><td>${l.id}</td><td>${esc(l.kind)}</td><td>${esc(l.name)}</td><td>${l.channel}</td><td>${esc(l.source||'—')}</td><td>${esc(l.phone||'')}</td><td class="mut">${(l.at||'').slice(0,16).replace('T',' ')}</td></tr>`).join('')||'<tr><td class="mut">Пусто</td></tr>');
 }
 async function sendBroadcast(){
   const r=await api('/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},
