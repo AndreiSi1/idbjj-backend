@@ -49,6 +49,19 @@ CONTACT_KIND_RU = {"trial": "Пробное занятие", "question": "Воп
 # Генератор «План к соревнованиям»: формат турнира — канонические значения для промпта.
 COMP_FORMAT_RU = {"gi": "Gi (в кимоно)", "nogi": "No-Gi (без кимоно)", "both": "Gi + No-Gi"}
 
+# Слова-выходы: распознаём на ЛЮБОМ шаге (анкета/план/дневник/контакт), чтобы юзер
+# не залипал, печатая «меню/назад/отмена» вместо нажатия кнопки.
+_ESCAPE_WORDS = {
+    "start", "старт", "меню", "menu", "menu principal", "menú principal", "main menu",
+    "главное меню", "назад", "back", "atras", "voltar", "отмена", "отменить",
+    "cancel", "cancelar", "стоп", "stop", "выйти", "выход", "salir", "sair",
+}
+
+
+def _is_escape(text: str) -> bool:
+    low = text.strip().lower().lstrip("/").strip().replace("ё", "е")
+    return low in _ESCAPE_WORDS
+
 
 def _menu_buttons(lang: str | None):
     return [
@@ -66,6 +79,11 @@ def _menu_buttons(lang: str | None):
 
 def _hint_buttons(lang: str | None):
     return [[(t(lang, "btn_menu"), "menu")]]
+
+
+def _cancel_buttons(lang: str | None):
+    """Видимый выход из шага ввода (анкета/план/дневник/контакт)."""
+    return [[(t(lang, "btn_cancel"), "menu")]]
 
 
 def _trainer_buttons(lang: str | None):
@@ -226,8 +244,9 @@ async def _handle_callback(session: AsyncSession, user: User, state: DialogState
 # ── текст ─────────────────────────────────────────────────────────────────────────
 
 async def _handle_text(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
-    low = text.lower()
-    if low in ("/start", "start", "старт", "меню", "menu", "/menu", "menú", "menú principal"):
+    # Выход из любого шага по слову-команде (меню/назад/отмена/…) — иначе анкета и
+    # другие шаги «съедают» навигационный текст как ответ.
+    if _is_escape(text):
         await _show_menu(session, user, state)
         return
 
@@ -385,7 +404,7 @@ async def _start_trainer(session: AsyncSession, user: User, state: DialogState) 
     _set(state, step="trainer_anketa", mode=None, data={"_i": 0})
     await session.flush()
     await _send(session, user, t(user.lang, "tr_intro"))
-    await _send(session, user, t(user.lang, TRAINER_Q[TRAINER_FLOW[0]]))
+    await _send(session, user, t(user.lang, TRAINER_Q[TRAINER_FLOW[0]]), buttons=_cancel_buttons(user.lang))
 
 
 async def _start_diet(session: AsyncSession, user: User, state: DialogState) -> None:
@@ -396,7 +415,7 @@ async def _start_diet(session: AsyncSession, user: User, state: DialogState) -> 
     _set(state, step="diet_anketa", mode=None, data={"_i": 0})
     await session.flush()
     await _send(session, user, t(user.lang, "dt_intro"))
-    await _send(session, user, t(user.lang, DIET_Q[DIET_FLOW[0]]))
+    await _send(session, user, t(user.lang, DIET_Q[DIET_FLOW[0]]), buttons=_cancel_buttons(user.lang))
 
 
 async def _collect_anketa(
@@ -411,7 +430,7 @@ async def _collect_anketa(
         data["_i"] = i
         state.data = data
         await session.flush()
-        await _send(session, user, t(user.lang, qmap[flow[i]]))
+        await _send(session, user, t(user.lang, qmap[flow[i]]), buttons=_cancel_buttons(user.lang))
         return
     # анкета собрана
     data.pop("_i", None)
@@ -437,7 +456,7 @@ async def _start_comp(session: AsyncSession, user: User, state: DialogState) -> 
     _set(state, step="comp_weeks", mode=None, data={})
     await session.flush()
     await _send(session, user, t(user.lang, "comp_intro"))
-    await _send(session, user, t(user.lang, "comp_q_weeks"))
+    await _send(session, user, t(user.lang, "comp_q_weeks"), buttons=_cancel_buttons(user.lang))
 
 
 async def _collect_comp_weeks(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
@@ -457,7 +476,7 @@ async def _comp_format(session: AsyncSession, user: User, state: DialogState, fm
     data["Формат"] = COMP_FORMAT_RU.get(fmt_key, fmt_key)
     _set(state, step="comp_goal", mode=None, data=data)
     await session.flush()
-    await _send(session, user, t(user.lang, "comp_q_goal"))
+    await _send(session, user, t(user.lang, "comp_q_goal"), buttons=_cancel_buttons(user.lang))
 
 
 async def _collect_comp_goal(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
@@ -515,7 +534,7 @@ async def _show_journal(session: AsyncSession, user: User, state: DialogState) -
 async def _journal_add(session: AsyncSession, user: User, state: DialogState) -> None:
     _set(state, step="journal_write", mode=None, data={})
     await session.flush()
-    await _send(session, user, t(user.lang, "jr_ask"))
+    await _send(session, user, t(user.lang, "jr_ask"), buttons=_cancel_buttons(user.lang))
 
 
 async def _collect_journal(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
@@ -587,7 +606,7 @@ async def _contact_kind(session: AsyncSession, user: User, state: DialogState, k
     _set(state, step="contact_phone", mode=None, data={"kind": kind_key})
     await session.flush()
     label = t(user.lang, f"ck_{kind_key}") if kind_key in ("trial", "question", "sub") else kind_key
-    await _send(session, user, t(user.lang, "contact_phone", kind=label))
+    await _send(session, user, t(user.lang, "contact_phone", kind=label), buttons=_cancel_buttons(user.lang))
 
 
 async def _collect_phone(session: AsyncSession, user: User, state: DialogState, text: str) -> None:
