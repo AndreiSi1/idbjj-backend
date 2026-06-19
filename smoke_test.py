@@ -17,6 +17,7 @@ os.environ["TRAINER_CHAT_ID"] = "999"
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 import app.services.dialog as dialog
+from app.config import settings
 from app.db.base import Base
 from app.db import models  # noqa: F401
 from app.services import broadcast, telegram_api
@@ -35,11 +36,6 @@ async def fake_answer(channel, callback_id, notification=None):
 
 async def fake_ai(mode, user_text, profile_data=None, lang=None):
     return f"[AI:{mode}] профиль={profile_data} вопрос='{user_text}'"
-
-
-dialog.messenger.send_message = fake_send
-dialog.messenger.answer_callback = fake_answer
-dialog.ai.ask = fake_ai
 
 
 async def run_channel(Session, channel, ext_id):
@@ -72,6 +68,16 @@ async def run_channel(Session, channel, ext_id):
 
 
 async def main():
+    # Патчи/настройку делаем В ТЕСТЕ, а не на уровне модуля: под pytest все
+    # тестовые модули импортируются до прогона, и модульные патчи общих объектов
+    # (dialog.messenger, settings) перетирали бы друг друга между тестами.
+    SENT.clear()
+    dialog.messenger.send_message = fake_send
+    dialog.messenger.answer_callback = fake_answer
+    dialog.ai.ask = fake_ai
+    settings.trainer_channel = "max"
+    settings.trainer_chat_id = "999"
+
     engine = create_async_engine(os.environ["DATABASE_URL"])
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -108,4 +114,9 @@ async def main():
     print("\n🎉 Все проверки пройдены")
 
 
-asyncio.run(main())
+def test_smoke():
+    asyncio.run(main())
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -70,6 +71,28 @@ def normalize_belt(text: str | None) -> str | None:
     return None
 
 
+# Слова-маркеры полосок на поясе (RU/EN/ES/PT/DE).
+_STRIPE_RE = re.compile(r"(\d)\s*(?:полос|stripe|grau|grado|streifen|degree)", re.IGNORECASE)
+
+
+def parse_stripes(text: str | None) -> int | None:
+    """Число полосок (0–4) из ответа анкеты, или None если не указано.
+
+    Сначала ищем цифру рядом со словом-маркером («2 полоски» / «2 stripes» /
+    «2 graus»). Если маркера нет — берём одиночную цифру 0–4 в строке про пояс
+    («синий 2»). Возвращаем None, когда цифры нет, чтобы не затирать значение.
+    """
+    if not text:
+        return None
+    low = text.strip().lower()
+    m = _STRIPE_RE.search(low)
+    if not m:
+        m = re.search(r"\b([0-4])\b", low)
+    if not m:
+        return None
+    return max(0, min(int(m.group(1)), 4))
+
+
 def level_info(xp: int) -> dict:
     """Уровень, текущий титул, прогресс до следующего уровня."""
     level = xp // XP_PER_LEVEL + 1
@@ -110,6 +133,10 @@ async def set_belt(session: AsyncSession, user_id: int, belt_text: str | None) -
     belt = normalize_belt(belt_text)
     if belt:
         p.belt = belt
+    stripes = parse_stripes(belt_text)
+    if stripes is not None:
+        p.stripes = stripes
+    if belt or stripes is not None:
         await session.flush()
     return p
 

@@ -9,11 +9,11 @@ os.environ["TELEGRAM_BOT_URL"] = "https://t.me/idbjj_bot"
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 import app.services.dialog as dialog
+from app.config import settings
 from app.db.base import Base
 from app.db import models  # noqa: F401
 from app.services import metrics, progress
 from app.services.repo import upsert_user
-
 
 async def fake_send(channel, ext_id, text, buttons=None):
     return True
@@ -21,12 +21,17 @@ async def fake_answer(channel, cb, notification=None):
     return True
 async def fake_ai(mode, t, profile_data=None, lang=None):
     return "ответ"
-dialog.messenger.send_message = fake_send
-dialog.messenger.answer_callback = fake_answer
-dialog.ai.ask = fake_ai
 
 
 async def main():
+    # Патчи и настройку делаем В ТЕСТЕ (не на уровне модуля): под pytest все
+    # тестовые модули импортируются до запуска, и модульные патчи общих объектов
+    # (dialog.messenger, settings) перетирали бы друг друга между тестами.
+    dialog.messenger.send_message = fake_send
+    dialog.messenger.answer_callback = fake_answer
+    dialog.ai.ask = fake_ai
+    settings.telegram_bot_url = "https://t.me/idbjj_bot"
+
     engine = create_async_engine(os.environ["DATABASE_URL"])
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -37,7 +42,12 @@ async def main():
     assert progress.level_info(250)["level"] == 3 and progress.level_info(250)["into"] == 50
     assert progress.normalize_belt("Синий") == "blue"
     assert progress.normalize_belt("чёрный пояс") == "black"
-    print("✅ Уровни и нормализация пояса")
+    assert progress.parse_stripes("синий, 2 полоски") == 2
+    assert progress.parse_stripes("blue 3 stripes") == 3
+    assert progress.parse_stripes("azul, 4 grados") == 4
+    assert progress.parse_stripes("белый") is None  # не указано → не затираем
+    assert progress.parse_stripes("9 полосок") == 4  # клампим в 0–4
+    print("✅ Уровни, нормализация пояса и полоски")
 
     # 2) Полный путь: согласие(+5) → анкета тренера(+20, пояс) → вопрос AI(+2) → лид(+10)
     async def feed(**kw):
@@ -49,7 +59,7 @@ async def main():
     await feed(callback_payload="lang:ru", callback_id="l1")
     await feed(callback_payload="consent_accept", callback_id="c1")
     await feed(callback_payload="m:trainer", callback_id="c2")
-    for ans in ["синий", "18", "4", "турнир", "колено"]:
+    for ans in ["синий, 2 полоски", "18", "4", "турнир", "колено"]:
         await feed(text=ans)
     await feed(text="Как пройти гард?")
     await feed(callback_payload="menu", callback_id="c3")
@@ -63,9 +73,11 @@ async def main():
         # 5 + 20 + 2 + 10 = 37
         assert p.xp == 37, f"xp={p.xp} (ожидалось 37)"
         assert p.belt == "blue", f"belt={p.belt}"
+        assert p.stripes == 2, f"stripes={p.stripes} (ожидалось 2)"
         card = progress.render(p)
         assert "Синий пояс" in card and "Уровень 1" in card
-    print(f"✅ Прогресс: XP=37, пояс=blue, карточка рендерится")
+        assert "2🔸" in card, "полоски не отрисованы в карточке"
+    print(f"✅ Прогресс: XP=37, пояс=blue, 2 полоски, карточка рендерится")
 
     # 3) Метрики дашборда
     async with Session() as s:
@@ -90,4 +102,9 @@ async def main():
     print("\n🎉 Все проверки прогресса/панели/лендинга пройдены")
 
 
-asyncio.run(main())
+def test_progress():
+    asyncio.run(main())
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
