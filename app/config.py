@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     admin_user: str = "admin"
     admin_password: str = ""
 
+    # Владелец бота (для команды /admin В БОТЕ и уведомлений о новых юзерах).
+    # admin_chat_id — id владельца в admin_channel; пусто → команда/уведомления выкл.
+    admin_channel: str = "telegram"
+    admin_chat_id: str = ""
+
     # Ссылки на ботов для лендинга (кнопки «Открыть в MAX / Telegram»).
     max_bot_url: str = ""
     telegram_bot_url: str = ""

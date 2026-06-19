@@ -27,8 +27,10 @@ async def upsert_user(
         if user.referred_by == user.id:  # защита от самореферала
             user.referred_by = None
             await session.flush()
+        user.is_new = True  # транзиентный флаг (не в БД) — для уведомления о новичке
         return user
     # Существующий: дозаполняем имя и источник, но НЕ перезаписываем (first-touch).
+    user.is_new = False
     changed = False
     if full_name and not user.full_name:
         user.full_name = full_name
@@ -97,6 +99,14 @@ async def count_journal_entries(session: AsyncSession, user_id: int) -> int:
             )
         ).scalar_one()
         or 0
+    )
+
+
+async def count_users(session: AsyncSession) -> int:
+    """Всего пользователей (для уведомления владельцу о новичке)."""
+    from sqlalchemy import func as _func
+    return int(
+        (await session.execute(select(_func.count(User.id)))).scalar_one() or 0
     )
 
 

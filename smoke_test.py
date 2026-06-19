@@ -77,6 +77,7 @@ async def main():
     dialog.ai.ask = fake_ai
     settings.trainer_channel = "max"
     settings.trainer_chat_id = "999"
+    settings.admin_chat_id = ""  # в этом сценарии админ-уведомления не проверяем
 
     engine = create_async_engine(os.environ["DATABASE_URL"])
     async with engine.begin() as conn:
@@ -118,5 +119,61 @@ def test_smoke():
     asyncio.run(main())
 
 
+async def admin_scenario():
+    """Уведомление о новом юзере (владельцу + тренеру) и команда /admin владельца."""
+    SENT.clear()
+    dialog.messenger.send_message = fake_send
+    dialog.messenger.answer_callback = fake_answer
+    dialog.ai.ask = fake_ai
+    settings.admin_channel = "telegram"
+    settings.admin_chat_id = "500"      # владелец (Андрей)
+    settings.trainer_channel = "max"
+    settings.trainer_chat_id = "999"    # тренер (Денис)
+
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    Session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async def feed(channel, ext_id, *, full_name="Тест", **kw):
+        async with Session() as s:
+            await dialog.handle_update(s, channel=channel, ext_id=ext_id, full_name=full_name, **kw)
+            await s.commit()
+
+    # 1) Новый обычный юзер → уведомление и владельцу (tg/500), и тренеру (max/999)
+    await feed("telegram", "777", full_name="Новичок", text="/start", source="ig")
+    new_user_to = {(ch, eid) for ch, eid, txt in SENT if "Новый пользователь" in txt}
+    assert ("telegram", "500") in new_user_to, new_user_to
+    assert ("max", "999") in new_user_to, new_user_to
+    print("✅ Уведомление о новом юзере ушло владельцу и тренеру")
+
+    # 2) /admin от владельца → сводка владельцу (онбординг владельца сперва)
+    await feed("telegram", "500", full_name="Владелец", text="/start")
+    await feed("telegram", "500", callback_payload="lang:ru", callback_id="l")
+    await feed("telegram", "500", callback_payload="consent_accept", callback_id="c")
+    base = len(SENT)
+    await feed("telegram", "500", text="/admin")
+    admin_reply = [txt for ch, eid, txt in SENT[base:] if ch == "telegram" and eid == "500"]
+    assert any("сводка" in txt for txt in admin_reply), admin_reply
+    print("✅ /admin от владельца отдаёт сводку")
+
+    # 3) /admin от НЕ владельца → обычное поведение (без сводки)
+    await feed("telegram", "888", full_name="Чужой", text="/start")
+    await feed("telegram", "888", callback_payload="lang:ru", callback_id="l2")
+    await feed("telegram", "888", callback_payload="consent_accept", callback_id="c2")
+    base = len(SENT)
+    await feed("telegram", "888", text="/admin")
+    other_reply = [txt for ch, eid, txt in SENT[base:] if ch == "telegram" and eid == "888"]
+    assert not any("сводка" in txt for txt in other_reply), other_reply
+    print("✅ /admin от постороннего сводку не отдаёт")
+
+    print("\n🎉 Админ-команда и уведомления о новичках работают")
+
+
+def test_admin_and_new_user():
+    asyncio.run(admin_scenario())
+
+
 if __name__ == "__main__":
     asyncio.run(main())
+    asyncio.run(admin_scenario())

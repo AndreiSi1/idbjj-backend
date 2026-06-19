@@ -31,6 +31,8 @@ async def main():
     dialog.messenger.answer_callback = fake_answer
     dialog.ai.ask = fake_ai
     settings.telegram_bot_url = "https://t.me/idbjj_bot"
+    settings.admin_chat_id = ""    # без стороннего шума уведомлений
+    settings.trainer_chat_id = ""
 
     engine = create_async_engine(os.environ["DATABASE_URL"])
     async with engine.begin() as conn:

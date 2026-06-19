@@ -16,12 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.models import DialogState, Lead, User
-from app.services import ai, i18n, messenger, progress, share_card
+from app.services import ai, i18n, messenger, metrics, progress, share_card
 from app.services.i18n import t
 from app.services.repo import (
     add_journal_entry,
     count_journal_entries,
     count_referrals,
+    count_users,
     get_journal_entries,
     get_profile,
     get_state,
@@ -152,9 +153,17 @@ async def handle_update(
     user = await upsert_user(
         session, channel, ext_id, full_name=full_name, source=source, referred_by=referred_by
     )
+    # Новый пользователь → уведомить владельца и тренера (не должно ронять онбординг).
+    if getattr(user, "is_new", False):
+        await _notify_new_user(session, user)
     if text:
         await log_message(session, user.id, "in", text)
     state = await get_state(session, user.id)
+
+    # Команда /admin владельца — доступна в любом состоянии (даже в анкете).
+    if text and _is_admin(user) and _is_admin_cmd(text):
+        await _admin_panel(session, user)
+        return
 
     # 1) Язык ещё не выбран — пускаем только выбор языка.
     if user.lang is None:
@@ -631,3 +640,83 @@ async def _notify_trainer(user: User, kind: str, phone: str) -> None:
         f"Тип: {kind}\nОт: {who}\n📞 {phone}"
     )
     await messenger.send_message(settings.trainer_channel, settings.trainer_chat_id, text)
+
+
+# ── админ в боте + уведомления о новых юзерах ──────────────────────────────────────
+
+# Кому уходят уведомления о новичках: владелец (admin) + тренер. Дедуплицируем —
+# если владелец и тренер совпадают по (канал, id), шлём один раз.
+def _staff_targets() -> list[tuple[str, str]]:
+    targets: list[tuple[str, str]] = []
+    if settings.admin_chat_id:
+        targets.append((settings.admin_channel, str(settings.admin_chat_id)))
+    if settings.trainer_chat_id:
+        pair = (settings.trainer_channel, str(settings.trainer_chat_id))
+        if pair not in targets:
+            targets.append(pair)
+    return targets
+
+
+async def _notify_new_user(session: AsyncSession, user: User) -> None:
+    """Уведомить владельца и тренера о новом пользователе. Ошибки не роняют онбординг."""
+    targets = _staff_targets()
+    if not targets:
+        return
+    try:
+        total = await count_users(session)
+    except Exception:  # noqa: BLE001 — счётчик не критичен
+        total = 0
+    who = user.full_name or user.ext_id
+    text = (
+        "🆕 Новый пользователь бота\n"
+        f"Имя: {who}\n"
+        f"Канал: {user.channel}\n"
+        f"Источник: {user.source or '—'}\n"
+        f"Всего пользователей: {total}"
+    )
+    for ch, cid in targets:
+        try:
+            await messenger.send_message(ch, cid, text)
+        except Exception as e:  # noqa: BLE001 — уведомление не должно ронять онбординг
+            log.warning("new-user notify failed for %s:%s — %s", ch, cid, e)
+
+
+# Команды-синонимы для вызова админ-сводки (с / и без).
+_ADMIN_CMDS = {"admin", "админ", "админка", "panel", "панель", "stats", "статистика"}
+
+
+def _is_admin_cmd(text: str) -> bool:
+    return text.strip().lower().lstrip("/").strip() in _ADMIN_CMDS
+
+
+def _is_admin(user: User) -> bool:
+    return bool(
+        settings.admin_chat_id
+        and user.channel == settings.admin_channel
+        and str(user.ext_id) == str(settings.admin_chat_id)
+    )
+
+
+async def _admin_panel(session: AsyncSession, user: User) -> None:
+    """Сводка KPI прямо в боте + ссылка на веб-панель (только для владельца)."""
+    s = await metrics.summary(session)
+    srcs = await metrics.sources(session)
+    leads = await metrics.recent_leads(session, limit=5)
+    base = (settings.public_base_url or "https://idbjjapp.ru").rstrip("/")
+    src_lines = "\n".join(f"• {x['source']}: {x['count']}" for x in srcs[:6]) or "• —"
+    lead_lines = (
+        "\n".join(f"• {l['name']} — {l['kind']} ({l['phone']})" for l in leads)
+        if leads else "—"
+    )
+    text = (
+        "📊 ID BJJ — сводка\n\n"
+        f"👥 Пользователей: {s['total_users']} (TG {s['telegram_users']} / MAX {s['max_users']})\n"
+        f"✅ С согласием: {s['with_consent']}\n"
+        f"📝 Анкеты: тренер {s['trainer_profiles']} · диета {s['diet_profiles']}\n"
+        f"🎯 Лидов: {s['leads_total']}\n"
+        f"💬 Сообщений: вх {s['messages_in']} / исх {s['messages_out']}\n\n"
+        f"🔗 Источники:\n{src_lines}\n\n"
+        f"🆕 Последние лиды:\n{lead_lines}\n\n"
+        f"🖥 Веб-панель: {base}/admin"
+    )
+    await _send(session, user, text, buttons=_hint_buttons(user.lang))
