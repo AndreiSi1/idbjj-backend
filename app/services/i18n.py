@@ -1,4 +1,4 @@
-"""Локализация бота (RU / EN / ES / PT-BR).
+"""Локализация бота (RU / EN / ES / PT-BR / DE).
 
 Все строки UI собраны здесь по ключам. dialog.py берёт текст через t(lang, key).
 Канонические ключи полей анкет (Пояс, Стаж...) НЕ переводятся — они совпадают с
@@ -11,16 +11,17 @@ from __future__ import annotations
 
 # Язык по умолчанию / порядок выбора
 DEFAULT_LANG = "ru"
-LANGS = ("ru", "en", "es", "pt")
+LANGS = ("ru", "en", "es", "pt", "de")
 
 # Кнопки выбора языка (показываются до согласия).
 LANG_BUTTONS = [
     [("🇷🇺 Русский", "lang:ru"), ("🇬🇧 English", "lang:en")],
     [("🇪🇸 Español", "lang:es"), ("🇧🇷 Português", "lang:pt")],
+    [("🇩🇪 Deutsch", "lang:de")],
 ]
 
 # Экран выбора языка — нейтрально-многоязычный (язык ещё не выбран).
-LANG_PROMPT = "🥋 Выбери язык / Choose your language / Elige idioma / Escolha o idioma:"
+LANG_PROMPT = "🥋 Выбери язык / Choose your language / Elige idioma / Escolha o idioma / Sprache wählen:"
 
 # Директива языка ответа — ставится В НАЧАЛО системного промпта (иначе модель
 # матчится с русским контекстом базы знаний). Формулировка усиленная.
@@ -29,15 +30,16 @@ AI_LANG = {
     "en": "CRITICAL RULE: Write your ENTIRE response in English only. The instructions and reference materials below are in Russian, but you MUST answer in English.",
     "es": "REGLA CRÍTICA: Escribe TODA tu respuesta únicamente en español. Las instrucciones y los materiales de referencia a continuación están en ruso, pero DEBES responder en español.",
     "pt": "REGRA CRÍTICA: Escreva TODA a sua resposta apenas em português (Brasil). As instruções e os materiais de referência abaixo estão em russo, mas você DEVE responder em português.",
+    "de": "WICHTIGE REGEL: Schreibe deine GESAMTE Antwort ausschließlich auf Deutsch. Die Anweisungen und Referenzmaterialien unten sind auf Russisch, aber du MUSST auf Deutsch antworten.",
 }
 
 # Пояса: ключ → подпись по языкам (эмодзи общий).
 BELT_LABELS = {
-    "white":  {"ru": "Белый пояс",       "en": "White belt",  "es": "Cinturón blanco",  "pt": "Faixa branca"},
-    "blue":   {"ru": "Синий пояс",        "en": "Blue belt",   "es": "Cinturón azul",    "pt": "Faixa azul"},
-    "purple": {"ru": "Фиолетовый пояс",   "en": "Purple belt", "es": "Cinturón violeta", "pt": "Faixa roxa"},
-    "brown":  {"ru": "Коричневый пояс",   "en": "Brown belt",  "es": "Cinturón marrón",  "pt": "Faixa marrom"},
-    "black":  {"ru": "Чёрный пояс",       "en": "Black belt",  "es": "Cinturón negro",   "pt": "Faixa preta"},
+    "white":  {"ru": "Белый пояс",       "en": "White belt",  "es": "Cinturón blanco",  "pt": "Faixa branca",  "de": "Weißer Gürtel"},
+    "blue":   {"ru": "Синий пояс",        "en": "Blue belt",   "es": "Cinturón azul",    "pt": "Faixa azul",    "de": "Blauer Gürtel"},
+    "purple": {"ru": "Фиолетовый пояс",   "en": "Purple belt", "es": "Cinturón violeta", "pt": "Faixa roxa",    "de": "Lila Gürtel"},
+    "brown":  {"ru": "Коричневый пояс",   "en": "Brown belt",  "es": "Cinturón marrón",  "pt": "Faixa marrom",  "de": "Brauner Gürtel"},
+    "black":  {"ru": "Чёрный пояс",       "en": "Black belt",  "es": "Cinturón negro",   "pt": "Faixa preta",   "de": "Schwarzer Gürtel"},
 }
 
 # Уровневые тиры (по номеру уровня) на 4 языках.
@@ -46,6 +48,7 @@ LEVEL_TITLES = {
     "en": [(1, "Mat Newcomer"), (3, "Fighter"), (5, "Athlete"), (8, "Mat Veteran"), (12, "Master")],
     "es": [(1, "Novato del tatami"), (3, "Luchador"), (5, "Atleta"), (8, "Veterano del tatami"), (12, "Maestro")],
     "pt": [(1, "Novato do tatame"), (3, "Lutador"), (5, "Atleta"), (8, "Veterano do tatame"), (12, "Mestre")],
+    "de": [(1, "Matten-Neuling"), (3, "Kämpfer"), (5, "Athlet"), (8, "Matten-Veteran"), (12, "Meister")],
 }
 
 T: dict[str, dict[str, str]] = {
@@ -400,6 +403,94 @@ T: dict[str, dict[str, str]] = {
         "btn_invite": "🤝 Convidar um amigo",
         "invite_text": "🤝 Convide amigos para o ID BJJ!\n\nMande seu link para um amigo — quando ele entrar, VOCÊS DOIS ganham XP de bônus.\n\nSeu link:\n{link}\n\nAmigos convidados: {count}",
         "ref_reward": "🎉 Um amigo entrou no ID BJJ pelo seu link! +{xp} XP. Obrigado por crescer a comunidade 🤝",
+    },
+    "de": {
+        "consent": (
+            "👋 Willkommen im ID BJJ Club!\n\n"
+            "Um fortzufahren, akzeptiere bitte die Nutzungsbedingungen und die Einwilligung "
+            "zur Verarbeitung personenbezogener Daten:\n• Bedingungen: {terms}\n• Datenschutz: {privacy}\n\n"
+            "Mit „Akzeptieren“ stimmst du diesen Dokumenten zu."
+        ),
+        "btn_accept": "✅ Akzeptieren",
+        "menu_text": "🥋 ID BJJ — Brazilian Jiu-Jitsu.\n\nWähle einen Bereich 👇",
+        "btn_trainer": "🥋 Online-Coach",
+        "btn_enc": "📚 BJJ-Enzyklopädie",
+        "btn_diet": "🥗 Ernährung",
+        "btn_progress": "📈 Mein Fortschritt",
+        "btn_oss": "🌐 Oss — soziales Netzwerk (bald)",
+        "btn_contact": "✉️ Coach kontaktieren",
+        "btn_lang": "🌐 Sprache ändern",
+        "lang_changed": "✅ Sprache auf Deutsch umgestellt.",
+        "btn_menu": "⬅️ Hauptmenü",
+        "btn_cancel": "✖️ Abbrechen",
+        "tr_intro": "Fülle einen kurzen Fragebogen aus — der Coach berücksichtigt dein Profil.",
+        "tr_q_belt": "🥋 Welchen Gürtel hast du? (weiß / blau / lila / braun / schwarz)",
+        "tr_q_exp": "📅 Wie viele Monate trainierst du BJJ?",
+        "tr_q_freq": "🔁 Wie viele Trainings pro Woche?",
+        "tr_q_goal": "🎯 Was ist dein Ziel? (z. B. Guard verbessern, Turniervorbereitung, Fitness)",
+        "tr_q_injury": "🩹 Einschränkungen oder Verletzungen? (wenn keine — schreibe „nein“)",
+        "dt_intro": "Fülle den Fragebogen aus — ich berechne Kalorien und Makros (Mifflin-St Jeor).",
+        "dt_q_sex": "⚧ Dein Geschlecht? (männlich / weiblich)",
+        "dt_q_age": "🎂 Dein Alter (volle Jahre)?",
+        "dt_q_height": "📏 Größe in cm?",
+        "dt_q_weight": "⚖️ Gewicht in kg?",
+        "dt_q_activity": "🏃 Aktivität: sitzend / leicht / mittel / hoch / sehr hoch?",
+        "dt_q_goal": "🎯 Ziel: abnehmen / Muskeln aufbauen / Form halten / Gesundheit / Gewicht machen?",
+        "anketa_saved": "✅ Profil gespeichert!",
+        "greet_trainer": "🥋 Ich bin dein Online-Coach. Frag mich zu Technik, Trainingsplan, Fortschritt.",
+        "btn_comp": "🏆 Wettkampfplan",
+        "comp_intro": "🏆 Ich erstelle einen persönlichen Turnier-Vorbereitungsplan. Beantworte 3 Fragen.",
+        "comp_q_weeks": "📅 Wie viele Wochen bis zum Wettkampf? (eine Zahl, z. B. 8)",
+        "comp_q_format": "🥋 Turnierformat?",
+        "cf_gi": "🥋 Gi (mit Kimono)",
+        "cf_nogi": "🩳 No-Gi (ohne Kimono)",
+        "cf_both": "🔁 Gi + No-Gi",
+        "comp_q_goal": "🎯 Ziel für das Turnier? (z. B. gewinnen, Erfahrung sammeln, Spezialtechnik üben)",
+        "comp_generating": "⏳ Ich erstelle deinen Vorbereitungsplan…",
+        "comp_user_req": "Erstelle meinen Wettkampf-Vorbereitungsplan anhand meines Profils und der Turnierdaten.",
+        "btn_journal": "📓 Trainingstagebuch",
+        "jr_title": "📓 Trainingstagebuch",
+        "jr_empty": "Dein Tagebuch ist leer. Trage dein erstes Training ein — ich merke mir, was du geübt hast, und helfe dir, ein System daraus zu machen.",
+        "jr_recent": "Letzte Einträge:",
+        "jr_count": "Einträge insgesamt: {n}.",
+        "btn_jr_add": "✍️ Training eintragen",
+        "btn_jr_review": "📊 Coach-Analyse",
+        "jr_ask": "Was hast du heute trainiert? Kurz: Techniken/Positionen, was geklappt hat, woran arbeiten.",
+        "jr_saved": "✅ Eingetragen! Schon {n} Trainings im Tagebuch. Komm nach jedem Training wieder 💪",
+        "jr_review_wait": "⏳ Ich analysiere dein Tagebuch…",
+        "jr_need_entries": "Trage zuerst mindestens ein Training ein — dann analysiere ich.",
+        "jr_user_req": "Analysiere mein Trainingstagebuch anhand meines Profils.",
+        "btn_jr_plan": "🗺️ Mein Gameplan",
+        "jr_plan_wait": "🗺️ Ich erstelle deinen Gameplan aus dem Tagebuch…",
+        "jr_plan_req": "Erstelle meinen Gameplan (Spielplan) aus meinem Tagebuch anhand meines Profils.",
+        "greet_encyclopedia": "📚 Ich bin die BJJ-Enzyklopädie. Frag mich zu Geschichte, Gürteln, Guards, Techniken, Champions.",
+        "greet_dietolog": "🥗 Ich bin der Ernährungsberater des Clubs. Frag mich zu Ernährung, Kalorien, Trainingsessen.",
+        "ai_unavailable": "⚠️ Die KI ist gerade nicht verfügbar, versuch es später.",
+        "diet_calc": "Berechne meine Kalorien und Makros anhand meines Profils.",
+        "contact_ask": "✉️ Worum geht es dir?",
+        "ck_trial": "🆓 Probetraining",
+        "ck_question": "❓ Frage an den Coach",
+        "ck_sub": "💳 Mitgliedschaft / Preise",
+        "contact_phone": "Anfrageart: {kind}.\n📞 Hinterlasse deine Telefonnummer — ein Coach meldet sich bei dir.",
+        "contact_done": "✅ Anfrage erhalten! Ein Coach meldet sich in Kürze bei dir.",
+        "oss_text": (
+            "🌐 Oss — das soziale Netzwerk für Grappler\n\n"
+            "Wie Instagram, aber für deine Leute: Trainings-Feed, Freunde und Partner, "
+            "Gyms weltweit, Austausch von Erfahrungen und Erfolgen.\n\n"
+            "🚧 In Entwicklung — bald verfügbar! Verfolge Ankündigungen hier im Bot."
+        ),
+        "pg_title": "📈 Dein Fortschritt",
+        "pg_rank": "Rang",
+        "pg_rank_none": "Rang: nicht festgelegt (fülle den „Online-Coach“-Fragebogen aus)",
+        "pg_level": "Level",
+        "pg_to_next": "Bis zum nächsten Level",
+        "pg_hint": "XP gibt es für Fragebögen, KI-Fragen und Anfragen. Komm oft wieder! 💪",
+        "btn_share_progress": "📤 Karte teilen",
+        "card_level": "Level",
+        "share_caption": "🥋 Mein BJJ-Fortschritt: {belt}, {title} (Level {level}). Ich verbessere mein Jiu-Jitsu mit ID BJJ 👉 {url}",
+        "btn_invite": "🤝 Freund einladen",
+        "invite_text": "🤝 Lade Freunde zu ID BJJ ein!\n\nSchick einem Freund deinen Link — wenn er beitritt, bekommt ihr BEIDE Bonus-XP.\n\nDein Link:\n{link}\n\nEingeladene Freunde: {count}",
+        "ref_reward": "🎉 Ein Freund ist über deinen Link zu ID BJJ gekommen! +{xp} XP. Danke, dass du die Community wachsen lässt 🤝",
     },
 }
 

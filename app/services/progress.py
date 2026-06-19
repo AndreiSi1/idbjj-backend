@@ -27,11 +27,11 @@ BELTS = {
 
 # Распознавание свободного текста из анкеты (RU/EN/ES/PT) → канонический ключ.
 _BELT_ALIASES = {
-    "бел": "white", "white": "white", "blanco": "white", "branc": "white",
-    "син": "blue", "голуб": "blue", "blue": "blue", "azul": "blue",
-    "фиол": "purple", "purple": "purple", "violeta": "purple", "rox": "purple",
-    "корич": "brown", "brown": "brown", "marrón": "brown", "marron": "brown", "marrom": "brown",
-    "чер": "black", "чёр": "black", "black": "black", "negro": "black", "pret": "black",
+    "бел": "white", "white": "white", "blanco": "white", "branc": "white", "weiß": "white", "weiss": "white",
+    "син": "blue", "голуб": "blue", "blue": "blue", "azul": "blue", "blau": "blue",
+    "фиол": "purple", "purple": "purple", "violeta": "purple", "rox": "purple", "lila": "purple", "violett": "purple",
+    "корич": "brown", "brown": "brown", "marrón": "brown", "marron": "brown", "marrom": "brown", "braun": "brown",
+    "чер": "black", "чёр": "black", "black": "black", "negro": "black", "pret": "black", "schwarz": "black",
 }
 
 # Очки за события. Разовые события естественно случаются ~один раз (анкета не
